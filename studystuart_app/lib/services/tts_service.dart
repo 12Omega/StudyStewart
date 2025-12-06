@@ -16,8 +16,12 @@ class TTSService {
   Future<void> initialize() async {
     await _flutterTts.setLanguage("en-US");
     await _flutterTts.setSpeechRate(0.5);
-    await _flutterTts.setVolume(1.0);
     await _flutterTts.setPitch(1.0);
+    
+    // Load volume from settings
+    final prefs = await SharedPreferences.getInstance();
+    final volume = prefs.getDouble('volume') ?? 1.0;
+    await _flutterTts.setVolume(volume);
 
     _flutterTts.setStartHandler(() {
       _isSpeaking = true;
@@ -63,6 +67,10 @@ class TTSService {
 
   Future<void> setPitch(double pitch) async {
     await _flutterTts.setPitch(pitch);
+  }
+
+  Future<void> setVolume(double volume) async {
+    await _flutterTts.setVolume(volume);
   }
 
   void dispose() {
