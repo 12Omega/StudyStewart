@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'screens/auth_screen.dart';
+import 'screens/home_screen.dart';
+import 'services/tts_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await TTSService().initialize();
   runApp(const StudyStuartApp());
 }
 

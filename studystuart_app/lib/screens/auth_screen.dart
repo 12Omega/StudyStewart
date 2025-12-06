@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../services/tts_service.dart';
+import '../widgets/tts_button.dart';
+import 'home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -11,6 +14,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool isLogin = true;
   bool showForgotPassword = false;
   bool isLoading = false;
+  final TTSService _ttsService = TTSService();
 
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -20,6 +24,21 @@ class _AuthScreenState extends State<AuthScreen> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeTTS();
+  }
+
+  Future<void> _initializeTTS() async {
+    await _ttsService.initialize();
+    _speakWelcome();
+  }
+
+  void _speakWelcome() {
+    _ttsService.speak('Welcome to Study Stuart. Please login or sign up to continue.');
+  }
 
   @override
   void dispose() {
@@ -36,12 +55,14 @@ class _AuthScreenState extends State<AuthScreen> {
       showForgotPassword = false;
       _formKey.currentState?.reset();
     });
+    _ttsService.speak(isLogin ? 'Switched to login mode' : 'Switched to sign up mode');
   }
 
   void _showForgotPassword() {
     setState(() {
       showForgotPassword = true;
     });
+    _ttsService.speak('Forgot password. Please enter your email to receive a password reset link.');
   }
 
   void _hideForgotPassword() {
@@ -76,16 +97,20 @@ class _AuthScreenState extends State<AuthScreen> {
         // Handle login
         await Future.delayed(const Duration(seconds: 2));
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login successful')),
+          _ttsService.speak('Login successful');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
         }
       } else {
         // Handle signup
         await Future.delayed(const Duration(seconds: 2));
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Account created successfully')),
+          _ttsService.speak('Account created successfully');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
         }
       }
@@ -110,7 +135,9 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: Stack(
+        children: [
+          Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -390,6 +417,16 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
           ),
         ),
+      ),
+          // TTS Button in top right corner
+          Positioned(
+            top: 16,
+            right: 16,
+            child: SafeArea(
+              child: TTSButton(),
+            ),
+          ),
+        ],
       ),
     );
   }
