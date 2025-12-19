@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../services/tts_service.dart';
 import '../widgets/tts_button.dart';
+import 'audio_challenge_screen.dart';
+import 'kinesthetic_screen.dart';
+import 'wordle_screen.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -314,6 +317,77 @@ class _GameScreenState extends State<GameScreen> {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 16),
+                // Additional game options
+                Text(
+                  'Try Other Games',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AudioChallengeScreen()),
+                        );
+                      },
+                      icon: const Icon(Icons.hearing),
+                      label: const Text('Audio'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const KinestheticScreen()),
+                        );
+                      },
+                      icon: const Icon(Icons.touch_app),
+                      label: const Text('Reading'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const WordleScreen()),
+                    );
+                  },
+                  icon: const Icon(Icons.grid_3x3),
+                  label: const Text('Wordle Game'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 8,
+                    ),
+                  ),
                 ),
               ],
             ),

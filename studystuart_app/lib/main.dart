@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'screens/auth_screen.dart';
-import 'screens/home_screen.dart';
 import 'services/tts_service.dart';
 import 'services/settings_service.dart';
 
@@ -47,7 +46,7 @@ class _StudyStuartAppState extends State<StudyStuartApp> {
         useMaterial3: true,
         brightness: Brightness.light,
         scaffoldBackgroundColor: Colors.grey.shade50,
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -59,7 +58,7 @@ class _StudyStuartAppState extends State<StudyStuartApp> {
         useMaterial3: true,
         brightness: Brightness.dark,
         scaffoldBackgroundColor: Colors.grey.shade900,
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

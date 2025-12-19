@@ -18,7 +18,7 @@ class TTSService {
     await _flutterTts.setSpeechRate(0.5);
     await _flutterTts.setPitch(1.0);
     
-    // Load volume from settings
+    // Load settings from preferences
     final prefs = await SharedPreferences.getInstance();
     final volume = prefs.getDouble('volume') ?? 1.0;
     await _flutterTts.setVolume(volume);
@@ -35,8 +35,7 @@ class TTSService {
       _isSpeaking = false;
     });
 
-    // Load saved preference
-    final prefs = await SharedPreferences.getInstance();
+    // Load saved TTS enabled preference
     _isEnabled = prefs.getBool('tts_enabled') ?? true;
   }
 

@@ -135,291 +135,445 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
-          Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.blue.shade400,
-              Colors.purple.shade400,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
+          SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
-              child: Card(
-                elevation: 8,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Logo or App Name
-                      Icon(
-                        Icons.school,
-                        size: 64,
-                        color: Theme.of(context).primaryColor,
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  
+                  // Logo
+                  Container(
+                    width: 79,
+                    height: 79,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.blue.shade100,
+                    ),
+                    child: Icon(
+                      Icons.school,
+                      size: 40,
+                      color: Colors.blue.shade600,
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 32),
+
+                  // Toggle Switch
+                  if (!showForgotPassword)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'StudyStuart',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                if (!isLogin) _toggleAuthMode();
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: isLogin ? Theme.of(context).primaryColor : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: Text(
+                                  'Log in',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: isLogin ? Colors.white : Color(0xFF6F6B6B),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ),
                             ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                if (isLogin) _toggleAuthMode();
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: !isLogin ? Theme.of(context).primaryColor : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: Text(
+                                  'Sign up',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: !isLogin ? Colors.white : Color(0xFF6F6B6B),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 32),
+                    ),
 
-                      // Toggle Switch
-                      if (!showForgotPassword)
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    if (!isLogin) _toggleAuthMode();
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    decoration: BoxDecoration(
-                                      color: isLogin ? Theme.of(context).primaryColor : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(25),
-                                    ),
-                                    child: Text(
-                                      'Login',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: isLogin ? Colors.white : Colors.black54,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    if (isLogin) _toggleAuthMode();
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    decoration: BoxDecoration(
-                                      color: !isLogin ? Theme.of(context).primaryColor : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(25),
-                                    ),
-                                    child: Text(
-                                      'Sign Up',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: !isLogin ? Colors.white : Colors.black54,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                  if (showForgotPassword)
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: _hideForgotPassword,
                         ),
-
-                      if (showForgotPassword)
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.arrow_back),
-                              onPressed: _hideForgotPassword,
-                            ),
-                            Text(
-                              'Forgot Password',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                          ],
-                        ),
-
-                      const SizedBox(height: 24),
-
-                      // Form
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            // Name field (only for signup)
-                            if (!isLogin && !showForgotPassword)
-                              TextFormField(
-                                controller: _nameController,
-                                decoration: InputDecoration(
-                                  labelText: 'Full Name',
-                                  prefixIcon: const Icon(Icons.person),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return 'Please enter your name';
-                                  }
-                                  return null;
-                                },
+                        Text(
+                          'Forgot Password',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
                               ),
+                        ),
+                      ],
+                    ),
 
-                            if (!isLogin && !showForgotPassword) const SizedBox(height: 16),
+                  const SizedBox(height: 40),
 
-                            // Email field
-                            TextFormField(
-                              controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
+                  // Form
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Name field (only for signup)
+                        if (!isLogin && !showForgotPassword) ...[
+                          Text(
+                            'Full Name',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF2A2A2A),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade300, width: 2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: TextFormField(
+                              controller: _nameController,
                               decoration: InputDecoration(
-                                labelText: 'Email',
-                                prefixIcon: const Icon(Icons.email),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                                hintText: 'Enter your full name',
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.all(16),
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Please enter your email';
-                                }
-                                if (!value.contains('@')) {
-                                  return 'Please enter a valid email';
+                                  return 'Please enter your name';
                                 }
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 16),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
 
-                            // Password field (not for forgot password)
-                            if (!showForgotPassword)
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: _obscurePassword,
-                                decoration: InputDecoration(
-                                  labelText: 'Password',
-                                  prefixIcon: const Icon(Icons.lock),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscurePassword = !_obscurePassword;
-                                      });
-                                    },
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your password';
-                                  }
-                                  if (!isLogin && value.length < 6) {
-                                    return 'Password must be at least 6 characters';
-                                  }
-                                  return null;
-                                },
+                        // Email field
+                        Text(
+                          'Your Email',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2A2A2A),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300, width: 2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: InputDecoration(
+                              hintText: 'rambahadur01@gmail.com',
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.all(16),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter your email';
+                              }
+                              if (!value.contains('@')) {
+                                return 'Please enter a valid email';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Password field (not for forgot password)
+                        if (!showForgotPassword) ...[
+                          Text(
+                            'Password',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF2A2A2A),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: isLogin ? Colors.red.shade300 : Colors.grey.shade300, 
+                                width: 2
                               ),
-
-                            if (!isLogin && !showForgotPassword) const SizedBox(height: 16),
-
-                            // Confirm Password field (only for signup)
-                            if (!isLogin && !showForgotPassword)
-                              TextFormField(
-                                controller: _confirmPasswordController,
-                                obscureText: _obscureConfirmPassword,
-                                decoration: InputDecoration(
-                                  labelText: 'Confirm Password',
-                                  prefixIcon: const Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscureConfirmPassword = !_obscureConfirmPassword;
-                                      });
-                                    },
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: TextFormField(
+                              controller: _passwordController,
+                              obscureText: _obscurePassword,
+                              decoration: InputDecoration(
+                                hintText: 'Enter your password',
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.all(16),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
                                   ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
                                 ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please confirm your password';
-                                  }
-                                  if (value != _passwordController.text) {
-                                    return 'Passwords do not match';
-                                  }
-                                  return null;
-                                },
                               ),
-
-                            const SizedBox(height: 24),
-
-                            // Submit Button
-                            SizedBox(
-                              width: double.infinity,
-                              height: 50,
-                              child: ElevatedButton(
-                                onPressed: isLoading ? null : _submit,
-                                style: ElevatedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: isLoading
-                                    ? const CircularProgressIndicator(color: Colors.white)
-                                    : Text(
-                                        showForgotPassword
-                                            ? 'Send Reset Link'
-                                            : isLogin
-                                                ? 'Login'
-                                                : 'Sign Up',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your password';
+                                }
+                                if (!isLogin && value.length < 6) {
+                                  return 'Password must be at least 6 characters';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          
+                          // Error message for login
+                          if (isLogin) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              'Wrong password',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFF665D5D),
                               ),
                             ),
+                          ],
+                          
+                          const SizedBox(height: 16),
+                        ],
 
-                            // Forgot Password Link (only for login)
-                            if (isLogin && !showForgotPassword) ...[
-                              const SizedBox(height: 16),
-                              TextButton(
-                                onPressed: _showForgotPassword,
-                                child: const Text('Forgot Password?'),
+                        // Confirm Password field (only for signup)
+                        if (!isLogin && !showForgotPassword) ...[
+                          Text(
+                            'Confirm Password',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF2A2A2A),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade300, width: 2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: TextFormField(
+                              controller: _confirmPasswordController,
+                              obscureText: _obscureConfirmPassword,
+                              decoration: InputDecoration(
+                                hintText: 'Confirm your password',
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.all(16),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscureConfirmPassword = !_obscureConfirmPassword;
+                                    });
+                                  },
+                                ),
                               ),
-                            ],
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please confirm your password';
+                                }
+                                if (value != _passwordController.text) {
+                                  return 'Passwords do not match';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
+                        const SizedBox(height: 24),
+
+                        // Submit Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 45,
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : _submit,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: isLoading
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : Text(
+                                    showForgotPassword
+                                        ? 'Reset Password'
+                                        : isLogin
+                                            ? 'Continue'
+                                            : 'Sign Up',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Or divider
+                        Row(
+                          children: [
+                            Expanded(child: Divider(color: Colors.grey.shade300)),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Text(
+                                'Or',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                            Expanded(child: Divider(color: Colors.grey.shade300)),
                           ],
                         ),
-                      ),
-                    ],
+
+                        const SizedBox(height: 24),
+
+                        // Google Login Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 43,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              _ttsService.speak('Google login coming soon');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Google login coming soon!')),
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: Colors.grey.shade300),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.g_mobiledata, size: 24, color: Colors.red),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Login with Google',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF2A2A2A),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Bottom text and links
+                        if (isLogin && !showForgotPassword) ...[
+                          Center(
+                            child: TextButton(
+                              onPressed: _showForgotPassword,
+                              child: Text(
+                                'Forgot password?',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Color(0xFF648DDB),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
+                        Center(
+                          child: RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFF989898),
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: isLogin 
+                                    ? "Don't have an account? " 
+                                    : "Have an account? ",
+                                ),
+                                WidgetSpan(
+                                  child: GestureDetector(
+                                    onTap: _toggleAuthMode,
+                                    child: Text(
+                                      isLogin ? 'Sign up' : 'Sign in',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Color(0xFF116FB8),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ),
-        ),
-      ),
+          
           // TTS Button in top right corner
-          Positioned(
+          const Positioned(
             top: 16,
             right: 16,
             child: SafeArea(
