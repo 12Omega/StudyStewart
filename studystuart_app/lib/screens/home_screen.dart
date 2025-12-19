@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/tts_service.dart';
 import '../widgets/tts_button.dart';
+import '../constants/assets.dart';
 import 'game_screen.dart';
 import 'settings_screen.dart';
 import 'learning_screen.dart';
@@ -98,6 +99,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Notification and Profile
                       Row(
                         children: [
+                          // Asset Test Button (temporary)
+                          GestureDetector(
+                            onTap: () => Navigator.pushNamed(context, '/asset-test'),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              child: const Text('Test Assets', style: TextStyle(fontSize: 10)),
+                            ),
+                          ),
                           Container(
                             width: 33,
                             height: 33,
@@ -107,8 +116,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             child: Stack(
                               children: [
-                                const Center(
-                                  child: Icon(Icons.notifications_outlined, size: 20),
+                                Center(
+                                  child: Image.asset(
+                                    AppAssets.notification,
+                                    width: 20,
+                                    height: 20,
+                                  ),
                                 ),
                                 Positioned(
                                   top: 4,
@@ -134,18 +147,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 MaterialPageRoute(builder: (context) => const ProfileScreen()),
                               );
                             },
-                            child: Container(
-                              width: 24,
-                              height: 24,
-                              decoration: const BoxDecoration(
-                                color: Colors.grey,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.person,
-                                size: 16,
-                                color: Colors.white,
-                              ),
+                            child: CircleAvatar(
+                              radius: 12,
+                              backgroundImage: AssetImage(AppAssets.displayPicture),
                             ),
                           ),
                         ],
@@ -313,19 +317,29 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildNavItem(0, Icons.home, 'Home'),
-            _buildNavItem(1, Icons.psychology, 'Learning'),
-            _buildNavItem(2, Icons.auto_awesome, 'Converter'),
-            _buildNavItem(3, Icons.settings, 'Setting'),
-            _buildNavItem(4, Icons.dashboard, 'Dashboard'),
+            _buildNavItem(0, null, 'Home', 'home'),
+            _buildNavItem(1, null, 'Learning', 'psychology'),
+            _buildNavItem(2, null, 'Converter', 'converter'),
+            _buildNavItem(3, AppAssets.setting, 'Setting', 'setting'),
+            _buildNavItem(4, null, 'Dashboard', 'dashboard'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, String label) {
+  Widget _buildNavItem(int index, String? assetPath, String label, String iconName) {
     final isSelected = _selectedIndex == index;
+    
+    // Map icon names to Material Icons as fallback
+    final iconMap = {
+      'home': Icons.home,
+      'psychology': Icons.psychology,
+      'converter': Icons.auto_awesome,
+      'setting': Icons.settings,
+      'dashboard': Icons.dashboard,
+    };
+    
     return GestureDetector(
       onTap: () => _onBottomNavTap(index),
       child: Container(
@@ -339,11 +353,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: isSelected ? Colors.blue.withOpacity(0.3) : Colors.transparent,
                 borderRadius: BorderRadius.circular(30),
               ),
-              child: Icon(
-                icon,
-                size: 22,
-                color: isSelected ? Colors.blue : Colors.black54,
-              ),
+              child: assetPath != null
+                  ? Image.asset(
+                      assetPath,
+                      width: 22,
+                      height: 22,
+                      color: isSelected ? Colors.blue : Colors.black54,
+                    )
+                  : Icon(
+                      iconMap[iconName] ?? Icons.help,
+                      size: 22,
+                      color: isSelected ? Colors.blue : Colors.black54,
+                    ),
             ),
             const SizedBox(height: 4),
             Text(

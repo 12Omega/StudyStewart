@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/settings_service.dart';
 import '../services/tts_service.dart';
 import '../widgets/tts_button.dart';
+import '../constants/assets.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -33,24 +34,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.all(16.0),
             children: [
               // Appearance Section
-              _buildSectionHeader('Appearance', Icons.palette),
+              _buildSectionHeader('Appearance', Icons.palette, null),
               _buildThemeCard(),
               const SizedBox(height: 24),
 
               // Audio Section
-              _buildSectionHeader('Audio', Icons.volume_up),
+              _buildSectionHeader('Audio', Icons.volume_up, null),
               _buildVolumeCard(),
               const SizedBox(height: 16),
               _buildAudioSettingsCard(),
               const SizedBox(height: 24),
 
               // Notifications Section
-              _buildSectionHeader('Notifications', Icons.notifications),
+              _buildSectionHeader('Notifications', Icons.notifications, AppAssets.notification),
               _buildNotificationsCard(),
               const SizedBox(height: 24),
 
               // About Section
-              _buildSectionHeader('About', Icons.info),
+              _buildSectionHeader('About', Icons.info, null),
               _buildAboutCard(),
               const SizedBox(height: 24),
 
@@ -70,12 +71,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title, IconData icon) {
+  Widget _buildSectionHeader(String title, IconData icon, String? assetPath) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Row(
         children: [
-          Icon(icon, color: Theme.of(context).primaryColor),
+          assetPath != null
+              ? Image.asset(
+                  assetPath,
+                  width: 24,
+                  height: 24,
+                  color: Theme.of(context).primaryColor,
+                )
+              : Icon(icon, color: Theme.of(context).primaryColor),
           const SizedBox(width: 8),
           Text(
             title,

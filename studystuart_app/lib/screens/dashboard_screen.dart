@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/tts_service.dart';
 import '../widgets/tts_button.dart';
+import '../constants/assets.dart';
 import 'home_screen.dart';
 import 'learning_screen.dart';
 import 'converter_screen.dart';
@@ -185,18 +186,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     children: [
                       // Profile Picture
-                      Container(
-                        width: 58,
-                        height: 59,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.3),
-                        ),
-                        child: Icon(
-                          Icons.person,
-                          size: 30,
-                          color: Colors.white,
-                        ),
+                      CircleAvatar(
+                        radius: 29,
+                        backgroundImage: AssetImage(AppAssets.displayPicture),
                       ),
                       
                       const SizedBox(height: 8),

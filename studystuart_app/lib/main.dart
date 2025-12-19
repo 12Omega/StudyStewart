@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/auth_screen.dart';
 import 'services/tts_service.dart';
 import 'services/settings_service.dart';
+import 'widgets/figma_asset_examples.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,6 +67,9 @@ class _StudyStuartAppState extends State<StudyStuartApp> {
         ),
       ),
       home: const AuthScreen(),
+      routes: {
+        '/asset-test': (context) => const FigmaAssetExamples(),
+      },
     );
   }
 }

@@ -1,15 +1,19 @@
 {
   "enabled": true,
   "name": "Figma Component Code Connect",
-  "description": "Check if UI component should be connected to Figma design",
-  "version": "1",
+  "description": "Automatically link Flutter components to Figma designs for better design-code sync",
+  "version": "2",
   "when": {
     "type": "fileEdited",
-    "patterns": ["**/lib/widgets/**/*.dart", "**/lib/screens/**/*.dart"]
+    "patterns": [
+      "**/lib/widgets/**/*.dart",
+      "**/lib/screens/**/*.dart",
+      "**/lib/components/**/*.dart"
+    ]
   },
   "then": {
     "type": "askAgent",
-    "prompt": "When a Flutter component file is created or updated, ask the user if they would like to confirm if the code has been correctly attached to the Figma component of the same name. If the user approves: first run the get code connect map tool for the Figma URL: https://www.figma.com/design/m3ORtzfqv9yMdwGtdgrFbs/StudyStewart?node-id=0-1&m=dev&t=20ce9kftnvJSuNQQ-1. If the response is empty, run the add code connect map tool, otherwise tell the user they already have code mapped to that component. If the user rejects: Do not run any additional tools."
+    "prompt": "A Flutter component file was modified. Would you like to link this component to its corresponding Figma design for better design-code synchronization?\n\nIf YES:\n1. Ask for the specific Figma URL/node-id for this component\n2. Use get_code_connect_map to check existing mappings\n3. If no mapping exists, use add_code_connect_map to create the connection\n4. Confirm the mapping was successful\n\nIf NO: Skip Code Connect setup.\n\nThis helps ensure your Flutter code stays synchronized with Figma designs and enables better design-to-code workflows."
   },
   "shortName": "figma-code-connect"
 }
