@@ -60,9 +60,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 80),
             ],
           ),
-          // TTS Button in top right corner
+          // TTS Button moved to bottom right to avoid blocking UI
           Positioned(
-            top: 16,
+            bottom: 100,
             right: 16,
             child: TTSButton(),
           ),

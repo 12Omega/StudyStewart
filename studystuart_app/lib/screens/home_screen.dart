@@ -478,13 +478,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
           
-          // TTS Button
+          // TTS Button - moved to bottom right to avoid blocking header elements
           const Positioned(
-            top: 16,
+            bottom: 100, // Above bottom navigation
             right: 16,
-            child: SafeArea(
-              child: TTSButton(),
-            ),
+            child: TTSButton(),
           ),
         ],
       ),
