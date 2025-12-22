@@ -14,7 +14,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool isLogin = true;
   bool showForgotPassword = false;
   bool isLoading = false;
-  final TTSService _ttsService = TTSService();
+  final TTSService _voiceAssistant = TTSService();
 
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -22,22 +22,24 @@ class _AuthScreenState extends State<AuthScreen> {
   final _confirmPasswordController = TextEditingController();
   final _nameController = TextEditingController();
 
-  bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
+  bool _hidePassword = true;
+  bool _hideConfirmPassword = true;
 
   @override
   void initState() {
     super.initState();
-    _initializeTTS();
+    _setupVoiceAssistant();
   }
 
-  Future<void> _initializeTTS() async {
-    await _ttsService.initialize();
-    _speakWelcome();
+  /// Set up our friendly voice assistant and welcome the user
+  Future<void> _setupVoiceAssistant() async {
+    await _voiceAssistant.initialize();
+    _giveWarmWelcome();
   }
 
-  void _speakWelcome() {
-    _ttsService.speak('Welcome to Study Stuart. Please login or sign up to continue.');
+  /// Give users a warm, welcoming greeting
+  void _giveWarmWelcome() {
+    _voiceAssistant.speak('Welcome to Study Stuart! 🌟 I\'m so excited you\'re here! Let\'s get you signed in so we can start your amazing learning journey together!');
   }
 
   @override
@@ -58,13 +60,15 @@ class _AuthScreenState extends State<AuthScreen> {
     _ttsService.speak(isLogin ? 'Switched to login mode' : 'Switched to sign up mode');
   }
 
+  /// Handle when user forgets their password - be supportive!
   void _showForgotPassword() {
     setState(() {
       showForgotPassword = true;
     });
-    _ttsService.speak('Forgot password. Please enter your email to receive a password reset link.');
+    _voiceAssistant.speak('No worries! It happens to everyone! 😊 Just enter your email and I\'ll help you reset your password.');
   }
 
+  /// Hide the forgot password form
   void _hideForgotPassword() {
     setState(() {
       showForgotPassword = false;
@@ -270,7 +274,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Please enter your name';
+                                  return 'We need your name to get started! What should I call you? 😊';
                                 }
                                 return null;
                               },
@@ -304,10 +308,10 @@ class _AuthScreenState extends State<AuthScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'Please enter your email';
+                                return 'What\'s your email address? I need it to keep your account safe! 📧';
                               }
                               if (!value.contains('@')) {
-                                return 'Please enter a valid email';
+                                return 'Hmm, that doesn\'t look like a valid email. Could you double-check it? 🤔';
                               }
                               return null;
                             },
@@ -354,10 +358,10 @@ class _AuthScreenState extends State<AuthScreen> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter your password';
+                                  return 'I need your password to keep your account secure! 🔒';
                                 }
                                 if (!isLogin && value.length < 6) {
-                                  return 'Password must be at least 6 characters';
+                                  return 'Your password needs to be at least 6 characters long for security! 💪';
                                 }
                                 return null;
                               },
