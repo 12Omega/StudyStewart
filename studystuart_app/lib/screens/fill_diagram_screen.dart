@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:math';
 import '../services/tts_service.dart';
 import '../widgets/tts_button.dart';
+import '../constants/assets.dart';
 
 class FillDiagramScreen extends StatefulWidget {
   const FillDiagramScreen({super.key});
@@ -12,7 +14,7 @@ class FillDiagramScreen extends StatefulWidget {
 
 class _FillDiagramScreenState extends State<FillDiagramScreen>
     with TickerProviderStateMixin {
-  final TTSService _ttsService = TTSService();
+  final TTSService _voiceAssistant = TTSService();
   final Random _random = Random();
   
   late AnimationController _animationController;
@@ -23,38 +25,38 @@ class _FillDiagramScreenState extends State<FillDiagramScreen>
   int _currentDiagram = 0;
   bool _gameActive = true;
   
-  // Diagram data
+  // Diagram data with proper SVG assets
   final List<DiagramData> _diagrams = [
     DiagramData(
       title: 'Human Heart',
-      imagePath: 'assets/diagrams/heart.png',
+      imagePath: AppAssets.heartDiagram,
       labels: [
-        DiagramLabel('Aorta', Offset(0.3, 0.2), false),
-        DiagramLabel('Left Atrium', Offset(0.2, 0.4), false),
-        DiagramLabel('Right Ventricle', Offset(0.7, 0.6), false),
-        DiagramLabel('Left Ventricle', Offset(0.3, 0.7), false),
+        DiagramLabel('Left Atrium', Offset(0.25, 0.35), 'Left Atrium'),
+        DiagramLabel('Right Atrium', Offset(0.75, 0.35), 'Right Atrium'),
+        DiagramLabel('Left Ventricle', Offset(0.35, 0.65), 'Left Ventricle'),
+        DiagramLabel('Right Ventricle', Offset(0.65, 0.65), 'Right Ventricle'),
       ],
-      options: ['Aorta', 'Left Atrium', 'Right Ventricle', 'Left Ventricle', 'Pulmonary Artery', 'Vena Cava'],
+      options: ['Left Atrium', 'Right Atrium', 'Left Ventricle', 'Right Ventricle', 'Aorta', 'Pulmonary Artery'],
     ),
     DiagramData(
       title: 'Plant Cell',
-      imagePath: 'assets/diagrams/plant_cell.png',
+      imagePath: AppAssets.plantCellDiagram,
       labels: [
-        DiagramLabel('Nucleus', Offset(0.5, 0.5), false),
-        DiagramLabel('Cell Wall', Offset(0.1, 0.1), false),
-        DiagramLabel('Chloroplast', Offset(0.3, 0.3), false),
-        DiagramLabel('Vacuole', Offset(0.7, 0.4), false),
+        DiagramLabel('Nucleus', Offset(0.5, 0.4), 'Nucleus'),
+        DiagramLabel('Cell Wall', Offset(0.1, 0.1), 'Cell Wall'),
+        DiagramLabel('Chloroplast', Offset(0.25, 0.25), 'Chloroplast'),
+        DiagramLabel('Vacuole', Offset(0.7, 0.6), 'Vacuole'),
       ],
       options: ['Nucleus', 'Cell Wall', 'Chloroplast', 'Vacuole', 'Mitochondria', 'Cytoplasm'],
     ),
     DiagramData(
       title: 'Solar System',
-      imagePath: 'assets/diagrams/solar_system.png',
+      imagePath: AppAssets.solarSystemDiagram,
       labels: [
-        DiagramLabel('Sun', Offset(0.1, 0.5), false),
-        DiagramLabel('Earth', Offset(0.4, 0.5), false),
-        DiagramLabel('Mars', Offset(0.6, 0.5), false),
-        DiagramLabel('Jupiter', Offset(0.8, 0.5), false),
+        DiagramLabel('Sun', Offset(0.125, 0.5), 'Sun'),
+        DiagramLabel('Earth', Offset(0.425, 0.5), 'Earth'),
+        DiagramLabel('Jupiter', Offset(0.65, 0.5), 'Jupiter'),
+        DiagramLabel('Saturn', Offset(0.8, 0.5), 'Saturn'),
       ],
       options: ['Sun', 'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus'],
     ),
@@ -310,27 +312,12 @@ class _FillDiagramScreenState extends State<FillDiagramScreen>
                         borderRadius: BorderRadius.circular(17),
                         child: Stack(
                           children: [
-                            // Diagram background (placeholder)
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: RadialGradient(
-                                  center: Alignment.center,
-                                  colors: [
-                                    Colors.grey.shade100,
-                                    Colors.grey.shade200,
-                                  ],
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  diagram.title,
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                              ),
+                            // Diagram SVG display
+                            SvgPicture.asset(
+                              diagram.imagePath,
+                              fit: BoxFit.contain,
+                              width: double.infinity,
+                              height: double.infinity,
                             ),
                             
                             // Labels
@@ -568,7 +555,8 @@ class DiagramLabel {
   DiagramLabel(
     this.correctAnswer,
     this.position,
-    this.isCompleted, {
+    String correctAnswerParam, {
+    this.isCompleted = false,
     this.userAnswer,
   });
 }

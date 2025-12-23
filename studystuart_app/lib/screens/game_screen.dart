@@ -3,8 +3,7 @@ import 'package:flutter/services.dart';
 import '../services/tts_service.dart';
 import '../widgets/tts_button.dart';
 import 'audio_challenge_screen.dart';
-import 'kinesthetic_screen.dart';
-import 'wordle_screen.dart';
+import 'educational_wordle_screen.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -973,9 +972,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     ),
                     ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const KinestheticScreen()),
+                        // Kinesthetic game coming soon
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Kinesthetic game coming soon!')),
                         );
                       },
                       icon: const Icon(Icons.touch_app),
@@ -996,7 +995,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const WordleScreen()),
+                      MaterialPageRoute(builder: (context) => const EducationalWordleScreen()),
                     );
                   },
                   icon: const Icon(Icons.grid_3x3),
@@ -1017,7 +1016,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       ),
     );
   }
-}
+
   Widget _buildFeedbackOverlay() {
     return AnimatedBuilder(
       animation: _feedbackController,
@@ -1152,276 +1151,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildResultCard() {
-    final percentage = (_totalCorrect / _questions.length * 100).round();
-    final isExcellent = percentage >= 80;
-    final isGood = percentage >= 60;
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 25,
-                spreadRadius: 5,
-                offset: const Offset(0, 15),
-              ),
-            ],
-          ),
-          child: Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isExcellent 
-                    ? [Colors.amber.shade100, Colors.orange.shade100]
-                    : isGood 
-                      ? [Colors.blue.shade100, Colors.purple.shade100]
-                      : [Colors.green.shade100, Colors.teal.shade100],
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Animated trophy/medal
-                    AnimatedBuilder(
-                      animation: _pulseAnimation,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: 1.0 + (_pulseAnimation.value * 0.1),
-                          child: Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: isExcellent 
-                                  ? [Colors.amber.shade400, Colors.orange.shade400]
-                                  : isGood 
-                                    ? [Colors.blue.shade400, Colors.purple.shade400]
-                                    : [Colors.green.shade400, Colors.teal.shade400],
-                              ),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: (isExcellent ? Colors.amber : isGood ? Colors.blue : Colors.green).withOpacity(0.3),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 5),
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              isExcellent ? Icons.emoji_events : isGood ? Icons.star : Icons.thumb_up,
-                              size: 60,
-                              color: Colors.white,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    Text(
-                      isExcellent ? 'AMAZING!' : isGood ? 'GREAT JOB!' : 'WELL DONE!',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: isExcellent ? Colors.amber.shade700 : isGood ? Colors.blue.shade700 : Colors.green.shade700,
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Score display with animation
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.grey.shade200, width: 2),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Final Score',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$_score',
-                                style: const TextStyle(
-                                  fontSize: 48,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              const Icon(Icons.star, color: Colors.amber, size: 30),
-                            ],
-                          ),
-                          Text(
-                            '$_totalCorrect / ${_questions.length} correct ($percentage%)',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Achievements display
-                    if (_achievements.isNotEmpty) ...[
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.amber.shade50, Colors.orange.shade50],
-                          ),
-                          borderRadius: BorderRadius.circular(15),
-                          border: Border.all(color: Colors.amber.shade200),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.emoji_events, color: Colors.amber.shade600),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Achievements Earned',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.amber.shade700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 8,
-                              children: _achievements.map((achievement) => 
-                                Chip(
-                                  label: Text(achievement),
-                                  backgroundColor: Colors.amber.shade100,
-                                  labelStyle: TextStyle(color: Colors.amber.shade700, fontSize: 12),
-                                )
-                              ).toList(),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-                    
-                    // Action buttons with enhanced styling
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildActionButton(
-                          'Play Again',
-                          Icons.refresh,
-                          [Colors.green.shade400, Colors.teal.shade400],
-                          () {
-                            setState(() {
-                              _currentQuestion = 0;
-                              _score = 0;
-                              _streak = 0;
-                              _totalCorrect = 0;
-                              _achievements.clear();
-                            });
-                            _confettiController.reset();
-                            _speakQuestion();
-                          },
-                        ),
-                        _buildActionButton(
-                          'Home',
-                          Icons.home,
-                          [Colors.blue.shade400, Colors.purple.shade400],
-                          () => Navigator.pop(context),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 20),
-                    
-                    // "Try other games" section with pulsing effect
-                    AnimatedBuilder(
-                      animation: _pulseAnimation,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: 1.0 + (_pulseAnimation.value * 0.05),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Colors.purple.shade50, Colors.blue.shade50],
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.purple.shade100),
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  '🎮 Keep the Fun Going!',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.purple.shade700,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: [
-                                    _buildMiniGameButton('Audio Challenge', Icons.hearing, Colors.orange, () {
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => const AudioChallengeScreen()));
-                                    }),
-                                    _buildMiniGameButton('Reading Game', Icons.book, Colors.green, () {
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => const KinestheticScreen()));
-                                    }),
-                                    _buildMiniGameButton('Wordle', Icons.grid_3x3, Colors.purple, () {
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => const WordleScreen()));
-                                    }),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildActionButton(String text, IconData icon, List<Color> colors, VoidCallback onPressed) {
     return Container(
       decoration: BoxDecoration(
@@ -1454,7 +1183,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color.shade300, color.shade400],
+          colors: [
+            color.withOpacity(0.8),
+            color.withOpacity(1.0),
+          ],
         ),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [

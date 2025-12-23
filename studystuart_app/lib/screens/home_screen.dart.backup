@@ -14,6 +14,7 @@ import 'fill_diagram_screen.dart';
 import 'subway_surfer_screen.dart';
 import 'audio_repetition_screen.dart';
 import 'repeat_game_screen.dart';
+import 'wordle_screen.dart';
 import 'educational_wordle_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -250,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 
                 const SizedBox(height: 30),
                 
-                // Games Section Header with 3D effect
+                // 🎮 Games Section Header with 3D effect
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Container(
@@ -281,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          'Choose Your Adventure!',
+                          '🎮 Choose Your Adventure!',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -302,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 
                 const SizedBox(height: 25),
                 
-                // Enhanced 3D Game Cards Grid with Floating Effect
+                // 🎯 Enhanced 3D Game Cards Grid with Floating Effect
                 Expanded(
                   child: AnimatedBuilder(
                     animation: _floatingAnimation,
@@ -336,126 +337,137 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             crossAxisSpacing: 15,
                             mainAxisSpacing: 15,
                             childAspectRatio: 0.85,
-                            physics: const BouncingScrollPhysics(),
+                            physics: const BouncingScrollPhysics(), // Smooth bouncy scrolling
                             children: [
-                              // Word Games
-                              _buildGameCard(
-                                'Word Games',
-                                Icons.text_fields,
-                                [Colors.purple.shade400, Colors.blue.shade400],
-                                () {
-                                  _voiceAssistant.speak('Time for some word fun! Let\'s play and learn together!');
-                                  GameTransitionService.navigateToGame(
-                                    context, 
-                                    const GameScreen(),
-                                    transitionType: 'zoom',
-                                  );
-                                },
-                                0,
-                              ),
-                              
-                              // Math Challenge
-                              _buildGameCard(
-                                'Math Challenge',
-                                Icons.calculate,
-                                [Colors.orange.shade400, Colors.red.shade400],
-                                () {
-                                  _voiceAssistant.speak(_voiceAssistant.getWelcomeMessage('math'));
-                                  GameTransitionService.navigateToGame(
-                                    context, 
-                                    const MathGameScreen(),
-                                    transitionType: 'flip',
-                                  );
-                                },
-                                1,
-                              ),
-                              
-                              // Educational Wordle
-                              _buildGameCard(
-                                'Educational Wordle',
-                                Icons.school,
-                                [Colors.teal.shade400, Colors.cyan.shade400],
-                                () {
-                                  _voiceAssistant.speak(_voiceAssistant.getWelcomeMessage('wordle'));
-                                  GameTransitionService.navigateToGame(
-                                    context, 
-                                    const EducationalWordleScreen(),
-                                    transitionType: 'slide',
-                                  );
-                                },
-                                2,
-                              ),
-                              
-                              // Subway Surfer
-                              _buildGameCard(
-                                'Subway Surfer',
-                                Icons.train,
-                                [Colors.lightBlue.shade400, Colors.green.shade400],
-                                () {
-                                  _voiceAssistant.speak(_voiceAssistant.getWelcomeMessage('subway'));
-                                  GameTransitionService.navigateToGame(
-                                    context, 
-                                    const SubwaySurferScreen(),
-                                    transitionType: 'zoom',
-                                  );
-                                },
-                                3,
-                              ),
-                              
-                              // Fill in the Diagram
-                              _buildGameCard(
-                                'Fill in the Diagram',
-                                Icons.quiz,
-                                [Colors.purple.shade400, Colors.indigo.shade400],
-                                () {
-                                  _voiceAssistant.speak(_voiceAssistant.getWelcomeMessage('diagram'));
-                                  GameTransitionService.navigateToGame(
-                                    context, 
-                                    const FillDiagramScreen(),
-                                    transitionType: 'flip',
-                                  );
-                                },
-                                4,
-                              ),
-                              
-                              // Audio Repetition
-                              _buildGameCard(
-                                'Audio Repetition',
-                                Icons.hearing,
-                                [Colors.indigo.shade400, Colors.purple.shade400],
-                                () {
-                                  _voiceAssistant.speak(_voiceAssistant.getWelcomeMessage('audio'));
-                                  GameTransitionService.navigateToGame(
-                                    context, 
-                                    const AudioRepetitionScreen(),
-                                    transitionType: 'slide',
-                                  );
-                                },
-                                5,
-                              ),
-                              
-                              // Repeat Game
-                              _buildGameCard(
-                                'Repeat Game',
-                                Icons.replay,
-                                [Colors.pink.shade400, Colors.purple.shade400],
-                                () {
-                                  _voiceAssistant.speak('Memory challenge time! Let\'s see how well you can remember patterns!');
-                                  GameTransitionService.navigateToGame(
-                                    context, 
-                                    const RepeatGameScreen(),
-                                    transitionType: 'zoom',
-                                  );
-                                },
-                                6,
-                              ),
-                              
-
-                            ],
-                          ),
+                        // Word Games
+                        _buildGameCard(
+                          'Word Games',
+                          Icons.text_fields,
+                          [Colors.purple.shade400, Colors.blue.shade400],
+                          () {
+                            _voiceAssistant.speak('Time for some word fun! Let\'s play and learn together!');
+                            GameTransitionService.navigateToGame(
+                              context, 
+                              const GameScreen(),
+                              transitionType: 'zoom',
+                            );
+                          },
+                          0, // Card index for animation
                         ),
-                      );
-                    },
+                        
+                        // Math Challenge
+                        _buildGameCard(
+                          'Math Challenge',
+                          Icons.calculate,
+                          [Colors.orange.shade400, Colors.red.shade400],
+                          () {
+                            _voiceAssistant.speak(_voiceAssistant.getWelcomeMessage('math'));
+                            GameTransitionService.navigateToGame(
+                              context, 
+                              const MathGameScreen(),
+                              transitionType: 'flip',
+                            );
+                          },
+                          1, // Card index for animation
+                        ),
+                        
+                        // Educational Wordle
+                        _buildGameCard(
+                          'Educational Wordle',
+                          Icons.school,
+                          [Colors.teal.shade400, Colors.cyan.shade400],
+                          () {
+                            _voiceAssistant.speak(_voiceAssistant.getWelcomeMessage('wordle'));
+                            GameTransitionService.navigateToGame(
+                              context, 
+                              const EducationalWordleScreen(),
+                              transitionType: 'slide',
+                            );
+                          },
+                          2, // Card index for animation
+                        ),
+                        
+                        // Subway Surfer
+                        _buildGameCard(
+                          'Subway Surfer',
+                          Icons.train,
+                          [Colors.lightBlue.shade400, Colors.green.shade400],
+                          () {
+                            _voiceAssistant.speak(_voiceAssistant.getWelcomeMessage('subway'));
+                            GameTransitionService.navigateToGame(
+                              context, 
+                              const SubwaySurferScreen(),
+                              transitionType: 'zoom',
+                            );
+                          },
+                          3, // Card index for animation
+                        ),
+                        
+                        // Fill in the Diagram
+                        _buildGameCard(
+                          'Fill in the Diagram',
+                          Icons.quiz,
+                          [Colors.purple.shade400, Colors.indigo.shade400],
+                          () {
+                            _voiceAssistant.speak(_voiceAssistant.getWelcomeMessage('diagram'));
+                            GameTransitionService.navigateToGame(
+                              context, 
+                              const FillDiagramScreen(),
+                              transitionType: 'flip',
+                            );
+                          },
+                          4, // Card index for animation
+                        ),
+                        
+                        // Audio Repetition
+                        _buildGameCard(
+                          'Audio Repetition',
+                          Icons.hearing,
+                          [Colors.indigo.shade400, Colors.purple.shade400],
+                          () {
+                            _voiceAssistant.speak(_voiceAssistant.getWelcomeMessage('audio'));
+                            GameTransitionService.navigateToGame(
+                              context, 
+                              const AudioRepetitionScreen(),
+                              transitionType: 'slide',
+                            );
+                          },
+                          5, // Card index for animation
+                        ),
+                        
+                        // Repeat Game
+                        _buildGameCard(
+                          'Repeat Game',
+                          Icons.replay,
+                          [Colors.pink.shade400, Colors.purple.shade400],
+                          () {
+                            _voiceAssistant.speak('Memory challenge time! Let\'s see how well you can remember patterns!');
+                            GameTransitionService.navigateToGame(
+                              context, 
+                              const RepeatGameScreen(),
+                              transitionType: 'zoom',
+                            );
+                          },
+                          6, // Card index for animation
+                        ),
+                        
+                        // Wordle (existing)
+                        _buildGameCard(
+                          'Wordle',
+                          Icons.grid_3x3,
+                          [Colors.cyan.shade400, Colors.blue.shade400],
+                          () {
+                            _voiceAssistant.speak('Classic word puzzle time! Can you guess the mystery word?');
+                            GameTransitionService.navigateToGame(
+                              context, 
+                              const WordleScreen(),
+                              transitionType: 'flip',
+                            );
+                          },
+                          7, // Card index for animation
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
@@ -511,6 +523,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             onTapDown: (_) {
               setState(() => _cardPressed[cardIndex] = true);
               _cardAnimationControllers[cardIndex].forward();
+              // Add haptic feedback for better UX
+              // HapticFeedback.lightImpact(); // Uncomment if you want haptic feedback
             },
             onTapUp: (_) {
               setState(() => _cardPressed[cardIndex] = false);
@@ -522,7 +536,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               _cardAnimationControllers[cardIndex].reverse();
             },
             child: Container(
-              height: 140,
+              height: 140, // Fixed height for consistency
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 gradient: LinearGradient(
@@ -531,18 +545,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
+                  // Main shadow for depth
                   BoxShadow(
                     color: gradientColors[0].withOpacity(0.4),
                     blurRadius: _cardPressed[cardIndex] ? _cardElevationAnimations[cardIndex].value : 12,
                     spreadRadius: _cardPressed[cardIndex] ? 1 : 3,
                     offset: Offset(0, _cardPressed[cardIndex] ? 4 : 8),
                   ),
+                  // Secondary shadow for more depth
                   BoxShadow(
                     color: gradientColors[1].withOpacity(0.2),
                     blurRadius: _cardPressed[cardIndex] ? 8 : 16,
                     spreadRadius: 0,
                     offset: Offset(0, _cardPressed[cardIndex] ? 2 : 4),
                   ),
+                  // Inner highlight for 3D effect
                   BoxShadow(
                     color: Colors.white.withOpacity(0.2),
                     blurRadius: 2,
@@ -554,6 +571,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
+                  // Add subtle inner shadow for more depth
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
@@ -567,6 +585,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(20),
                   child: Stack(
                     children: [
+                      // Animated background gradient overlay
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         decoration: BoxDecoration(
@@ -586,6 +605,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                       
+                      // Shimmer effect overlay
                       Positioned.fill(
                         child: AnimatedOpacity(
                           duration: const Duration(milliseconds: 300),
@@ -607,11 +627,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                       
+                      // Main content
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            // 3D Icon with shadow
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
@@ -641,6 +663,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             
                             const SizedBox(height: 12),
                             
+                            // 3D Text with shadow
                             Text(
                               title,
                               style: TextStyle(
@@ -660,6 +683,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               overflow: TextOverflow.ellipsis,
                             ),
                             
+                            // Subtle "tap me" indicator
                             const SizedBox(height: 8),
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
@@ -681,6 +705,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                       
+                      // Floating "play" indicator in corner
                       Positioned(
                         top: 8,
                         right: 8,
@@ -729,6 +754,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildNavItem(int index, String? assetPath, String label, String iconName) {
     final isSelected = _currentlySelectedTab == index;
     
+    // Map icon names to Material Icons as fallback
     final iconMap = {
       'home': Icons.home,
       'psychology': Icons.psychology,

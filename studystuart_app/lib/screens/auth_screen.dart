@@ -15,6 +15,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool showForgotPassword = false;
   bool isLoading = false;
   final TTSService _voiceAssistant = TTSService();
+  final TTSService _ttsService = TTSService();
 
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -22,8 +23,8 @@ class _AuthScreenState extends State<AuthScreen> {
   final _confirmPasswordController = TextEditingController();
   final _nameController = TextEditingController();
 
-  bool _hidePassword = true;
-  bool _hideConfirmPassword = true;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void initState() {

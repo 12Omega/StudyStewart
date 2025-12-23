@@ -13,7 +13,7 @@ class SubwaySurferScreen extends StatefulWidget {
 
 class _SubwaySurferScreenState extends State<SubwaySurferScreen>
     with TickerProviderStateMixin {
-  final TTSService _ttsService = TTSService();
+  final TTSService _voiceAssistant = TTSService();
   final Random _random = Random();
   
   late AnimationController _runAnimationController;

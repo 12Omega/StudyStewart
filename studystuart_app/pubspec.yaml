@@ -17,6 +17,7 @@ dependencies:
   http: ^1.2.0
   google_generative_ai: ^0.4.3
   dart_openai: ^5.1.0
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:
@@ -29,3 +30,5 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/screens/
+    - assets/diagrams/
+    - assets/math-aids/

@@ -1,0 +1,37 @@
+<svg width="200" height="150" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- Division symbol -->
+  <circle cx="95" cy="55" r="3" fill="#607D8B"/>
+  <rect x="85" y="63" width="20" height="3" fill="#607D8B"/>
+  <circle cx="95" cy="75" r="3" fill="#607D8B"/>
+  
+  <!-- Visual representation -->
+  <g id="total">
+    <circle cx="20" cy="30" r="6" fill="#E91E63"/>
+    <circle cx="40" cy="30" r="6" fill="#E91E63"/>
+    <circle cx="60" cy="30" r="6" fill="#E91E63"/>
+    <circle cx="80" cy="30" r="6" fill="#E91E63"/>
+    <circle cx="100" cy="30" r="6" fill="#E91E63"/>
+    <circle cx="120" cy="30" r="6" fill="#E91E63"/>
+  </g>
+  
+  <text x="70" y="15" text-anchor="middle" font-size="14" fill="#333" font-weight="bold">6 ÷ 2</text>
+  
+  <!-- Groups -->
+  <g id="group1">
+    <rect x="15" y="80" width="70" height="40" fill="none" stroke="#2196F3" stroke-width="2" rx="5"/>
+    <circle cx="30" cy="95" r="6" fill="#2196F3"/>
+    <circle cx="50" cy="95" r="6" fill="#2196F3"/>
+    <circle cx="70" cy="95" r="6" fill="#2196F3"/>
+    <text x="42.5" y="110" text-anchor="middle" font-size="12" fill="#2196F3" font-weight="bold">Group 1</text>
+  </g>
+  
+  <g id="group2">
+    <rect x="115" y="80" width="70" height="40" fill="none" stroke="#4CAF50" stroke-width="2" rx="5"/>
+    <circle cx="130" cy="95" r="6" fill="#4CAF50"/>
+    <circle cx="150" cy="95" r="6" fill="#4CAF50"/>
+    <circle cx="170" cy="95" r="6" fill="#4CAF50"/>
+    <text x="150" y="110" text-anchor="middle" font-size="12" fill="#4CAF50" font-weight="bold">Group 2</text>
+  </g>
+  
+  <text x="100" y="140" text-anchor="middle" font-size="20" fill="#333" font-weight="bold">= 3 each</text>
+</svg>

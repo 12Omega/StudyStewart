@@ -1,0 +1,37 @@
+<svg width="200" height="150" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- Subtraction symbol -->
+  <rect x="90" y="60" width="20" height="4" fill="#F44336"/>
+  
+  <!-- Visual representation with dots -->
+  <g id="original">
+    <circle cx="30" cy="40" r="8" fill="#4CAF50"/>
+    <circle cx="50" cy="40" r="8" fill="#4CAF50"/>
+    <circle cx="70" cy="40" r="8" fill="#4CAF50"/>
+    <circle cx="90" cy="40" r="8" fill="#4CAF50"/>
+    <circle cx="110" cy="40" r="8" fill="#4CAF50"/>
+  </g>
+  
+  <text x="70" y="25" text-anchor="middle" font-size="16" fill="#333" font-weight="bold">5</text>
+  
+  <!-- Crossed out dots -->
+  <g id="removed">
+    <circle cx="130" cy="40" r="8" fill="#F44336" opacity="0.5"/>
+    <line x1="122" y1="32" x2="138" y2="48" stroke="#F44336" stroke-width="3"/>
+    <line x1="138" y1="32" x2="122" y2="48" stroke="#F44336" stroke-width="3"/>
+    
+    <circle cx="150" cy="40" r="8" fill="#F44336" opacity="0.5"/>
+    <line x1="142" y1="32" x2="158" y2="48" stroke="#F44336" stroke-width="3"/>
+    <line x1="158" y1="32" x2="142" y2="48" stroke="#F44336" stroke-width="3"/>
+  </g>
+  
+  <text x="140" y="25" text-anchor="middle" font-size="16" fill="#333" font-weight="bold">2</text>
+  
+  <!-- Result -->
+  <g id="result">
+    <circle cx="40" cy="100" r="8" fill="#FFD93D"/>
+    <circle cx="60" cy="100" r="8" fill="#FFD93D"/>
+    <circle cx="80" cy="100" r="8" fill="#FFD93D"/>
+  </g>
+  
+  <text x="60" y="130" text-anchor="middle" font-size="20" fill="#333" font-weight="bold">= 3</text>
+</svg>

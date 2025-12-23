@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:math';
 import '../services/tts_service.dart';
 import '../widgets/tts_button.dart';
+import '../constants/assets.dart';
 
 class MathGameScreen extends StatefulWidget {
   const MathGameScreen({super.key});
@@ -14,6 +16,7 @@ class _MathGameScreenState extends State<MathGameScreen> {
   final TTSService _voiceAssistant = TTSService();
   final Random _numberGenerator = Random();
   
+  // Original variables
   int _currentQuestionNumber = 0;
   int _playerScore = 0;
   int _timeRemainingInSeconds = 30;
@@ -27,10 +30,28 @@ class _MathGameScreenState extends State<MathGameScreen> {
   
   final List<String> _availableOperations = ['+', '-', '×', '÷'];
   final int _totalQuestionsInGame = 10;
+  
+  // Missing variables referenced in UI code
+  bool _gameActive = true;
+  int _currentQuestion = 0;
+  int _totalQuestions = 10;
+  int _timeLeft = 30;
+  int _num1 = 0;
+  int _num2 = 0;
+  String _operation = '+';
+  List<int> _options = [];
+  int _score = 0;
 
   @override
   void initState() {
     super.initState();
+    // Initialize all game state variables
+    _gameActive = true;
+    _currentQuestion = 0;
+    _totalQuestions = 10;
+    _timeLeft = 30;
+    _score = 0;
+    
     _createNewMathProblem();
     _welcomePlayerToMathGame();
     _startQuestionTimer();
@@ -107,6 +128,7 @@ class _MathGameScreenState extends State<MathGameScreen> {
       if (_gameIsActive && _timeRemainingInSeconds > 0 && mounted) {
         setState(() {
           _timeRemainingInSeconds--;
+          _timeLeft = _timeRemainingInSeconds; // Keep UI variable in sync
         });
         
         // Give a friendly warning when time is running low
@@ -137,6 +159,9 @@ class _MathGameScreenState extends State<MathGameScreen> {
     
     if (isCorrect) {
       _playerScore++;
+      setState(() {
+        _score = _playerScore; // Keep UI variable in sync
+      });
       _voiceAssistant.speak(_voiceAssistant.getCorrectAnswerMessage());
     } else {
       _voiceAssistant.speak('${_voiceAssistant.getIncorrectAnswerMessage()} The answer was $_correctAnswer.');
@@ -150,10 +175,20 @@ class _MathGameScreenState extends State<MathGameScreen> {
     setState(() {
       _currentQuestionNumber++;
       _timeRemainingInSeconds = 30;
+      // Keep UI variables in sync
+      _currentQuestion = _currentQuestionNumber;
+      _timeLeft = _timeRemainingInSeconds;
     });
     
     if (_currentQuestionNumber < _totalQuestionsInGame) {
       _generateQuestion();
+      // Update UI variables after generating new question
+      setState(() {
+        _num1 = _firstNumber;
+        _num2 = _secondNumber;
+        _operation = _mathOperation;
+        _options = List.from(_answerChoices);
+      });
     } else {
       _celebrateGameCompletion();
     }
@@ -163,6 +198,7 @@ class _MathGameScreenState extends State<MathGameScreen> {
   void _celebrateGameCompletion() {
     setState(() {
       _gameIsActive = false;
+      _gameActive = false; // Keep UI variable in sync
     });
     
     _voiceAssistant.speak(_voiceAssistant.getGameCompleteMessage(_playerScore, _totalQuestionsInGame));
@@ -175,8 +211,52 @@ class _MathGameScreenState extends State<MathGameScreen> {
       _playerScore = 0;
       _timeRemainingInSeconds = 30;
       _gameIsActive = true;
+      // Reset UI variables
+      _gameActive = true;
+      _currentQuestion = 0;
+      _timeLeft = 30;
+      _score = 0;
     });
+    _createNewMathProblem();
+    _startQuestionTimer();
+  }
+
+  /// Create a new math problem and sync all variables
+  void _createNewMathProblem() {
     _generateQuestion();
+    // Sync the UI variables with the internal variables
+    setState(() {
+      _gameActive = _gameIsActive;
+      _currentQuestion = _currentQuestionNumber;
+      _totalQuestions = _totalQuestionsInGame;
+      _timeLeft = _timeRemainingInSeconds;
+      _num1 = _firstNumber;
+      _num2 = _secondNumber;
+      _operation = _mathOperation;
+      _options = List.from(_answerChoices);
+      _score = _playerScore;
+    });
+  }
+
+  /// Handle player's answer selection
+  void _answerQuestion(int option) {
+    _checkPlayerAnswer(option);
+  }
+
+  /// Start a new game (alias for _startNewGame for UI consistency)
+  void _playAgain() {
+    setState(() {
+      _currentQuestionNumber = 0;
+      _playerScore = 0;
+      _timeRemainingInSeconds = 30;
+      _gameIsActive = true;
+      // Reset UI variables
+      _gameActive = true;
+      _currentQuestion = 0;
+      _timeLeft = 30;
+      _score = 0;
+    });
+    _createNewMathProblem();
     _startQuestionTimer();
   }
 
@@ -290,20 +370,39 @@ class _MathGameScreenState extends State<MathGameScreen> {
                 
                 const SizedBox(height: 32),
                 
-                // Math equation
+                // Math equation with visual aid
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.orange.shade50,
                     borderRadius: BorderRadius.circular(15),
                   ),
-                  child: Text(
-                    '$_num1 $_operation $_num2 = ?',
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange,
-                    ),
+                  child: Column(
+                    children: [
+                      Text(
+                        '$_num1 $_operation $_num2 = ?',
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Visual aid for the operation
+                      Container(
+                        height: 120,
+                        width: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.orange.shade200),
+                        ),
+                        child: SvgPicture.asset(
+                          AppAssets.getMathVisual(_operation),
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 
