@@ -243,7 +243,9 @@ class _FillDiagramScreenState extends State<FillDiagramScreen>
     final completedLabels = diagram.labels.where((l) => l.isCompleted).length;
     final totalLabels = diagram.labels.length;
     
-    return Scaffold(
+    return Directionality(
+      textDirection: TextDirection.ltr, // Force left-to-right text direction
+      child: Scaffold(
       appBar: AppBar(
         title: const Text('Fill in the Diagram'),
         backgroundColor: Colors.purple.shade100,
@@ -446,6 +448,7 @@ class _FillDiagramScreenState extends State<FillDiagramScreen>
           ),
         ],
       ),
+    ),
     );
   }
 

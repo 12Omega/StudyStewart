@@ -5,7 +5,6 @@ import 'math_game_screen.dart';
 import 'fill_diagram_screen.dart';
 import 'audio_repetition_screen.dart';
 import 'repeat_game_screen.dart';
-import 'subway_surfer_screen.dart';
 
 // Custom Educational Wordle Screen with generated content
 class CustomEducationalWordleScreen extends StatelessWidget {
@@ -89,22 +88,5 @@ class CustomRepeatGameScreen extends StatelessWidget {
     // For now, navigate to the regular Repeat Game screen
     // In a full implementation, you would pass the custom concepts to the game
     return const RepeatGameScreen();
-  }
-}
-
-// Custom Subway Surfer Screen with generated content
-class CustomSubwaySurferScreen extends StatelessWidget {
-  final GameContent gameContent;
-
-  const CustomSubwaySurferScreen({
-    super.key,
-    required this.gameContent,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // For now, navigate to the regular Subway Surfer screen
-    // In a full implementation, you would pass the custom questions to the game
-    return const SubwaySurferScreen();
   }
 }

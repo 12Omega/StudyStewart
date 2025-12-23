@@ -3,7 +3,7 @@ import '../services/tts_service.dart';
 import '../services/game_transition_service.dart';
 import '../widgets/tts_button.dart';
 import '../constants/assets.dart';
-import 'game_screen.dart';
+import 'word_games_screen.dart';
 import 'settings_screen.dart';
 import 'learning_screen.dart';
 import 'dashboard_screen.dart';
@@ -37,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late Animation<double> _floatingAnimation;
   
   // Track which cards are being pressed for 3D effects
-  final List<bool> _cardPressed = List.filled(8, false);
+  final List<bool> _cardPressed = List.filled(7, false);
 
   @override
   void initState() {
@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   /// Set up all 3D and floating animations
   void _setupAnimations() {
     // Card press animations
-    _cardAnimationControllers = List.generate(8, (index) => 
+    _cardAnimationControllers = List.generate(7, (index) => 
       AnimationController(
         duration: const Duration(milliseconds: 200),
         vsync: this,
@@ -347,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   _voiceAssistant.speak('Time for some word fun! Let\'s play and learn together!');
                                   GameTransitionService.navigateToGame(
                                     context, 
-                                    const GameScreen(),
+                                    const WordGamesScreen(),
                                     transitionType: 'zoom',
                                   );
                                 },
@@ -364,7 +364,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   GameTransitionService.navigateToGame(
                                     context, 
                                     const MathGameScreen(),
-                                    transitionType: 'flip',
+                                    transitionType: 'slide',
                                   );
                                 },
                                 1,
@@ -386,22 +386,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 2,
                               ),
                               
-                              // Subway Surfer
-                              _buildGameCard(
-                                'Subway Surfer',
-                                Icons.train,
-                                [Colors.lightBlue.shade400, Colors.green.shade400],
-                                () {
-                                  _voiceAssistant.speak(_voiceAssistant.getWelcomeMessage('subway'));
-                                  GameTransitionService.navigateToGame(
-                                    context, 
-                                    const SubwaySurferScreen(),
-                                    transitionType: 'zoom',
-                                  );
-                                },
-                                3,
-                              ),
-                              
                               // Fill in the Diagram
                               _buildGameCard(
                                 'Fill in the Diagram',
@@ -412,10 +396,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   GameTransitionService.navigateToGame(
                                     context, 
                                     const FillDiagramScreen(),
-                                    transitionType: 'flip',
+                                    transitionType: 'slide',
                                   );
                                 },
-                                4,
+                                3,
                               ),
                               
                               // Audio Repetition
@@ -431,7 +415,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     transitionType: 'slide',
                                   );
                                 },
-                                5,
+                                4,
                               ),
                               
                               // Repeat Game
@@ -447,7 +431,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     transitionType: 'zoom',
                                   );
                                 },
-                                6,
+                                5,
                               ),
                               
 

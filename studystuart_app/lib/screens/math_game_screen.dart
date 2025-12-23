@@ -262,52 +262,55 @@ class _MathGameScreenState extends State<MathGameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Math Magic Challenge! 🔢'),
-        backgroundColor: Colors.orange.shade100,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Center(
-              child: Text(
-                'Your Score: $_playerScore',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+    return Directionality(
+      textDirection: TextDirection.ltr, // Force left-to-right text direction
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Math Magic Challenge! 🔢'),
+          backgroundColor: Colors.orange.shade100,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Center(
+                child: Text(
+                  'Your Score: $_playerScore',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.orange.shade100,
-                  Colors.red.shade100,
-                ],
+          ],
+        ),
+        body: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.orange.shade100,
+                    Colors.red.shade100,
+                  ],
+                ),
+              ),
+              child: SafeArea(
+                child: _gameActive && _currentQuestion < _totalQuestions
+                    ? _buildQuestionCard()
+                    : _buildResultCard(),
               ),
             ),
-            child: SafeArea(
-              child: _gameActive && _currentQuestion < _totalQuestions
-                  ? _buildQuestionCard()
-                  : _buildResultCard(),
+            Positioned(
+              top: 16,
+              right: 16,
+              child: SafeArea(
+                child: TTSButton(),
+              ),
             ),
-          ),
-          Positioned(
-            top: 16,
-            right: 16,
-            child: SafeArea(
-              child: TTSButton(),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -379,12 +382,16 @@ class _MathGameScreenState extends State<MathGameScreen> {
                   ),
                   child: Column(
                     children: [
-                      Text(
-                        '$_num1 $_operation $_num2 = ?',
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
+                      Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: Text(
+                          '$_num1 $_operation $_num2 = ?',
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -397,9 +404,14 @@ class _MathGameScreenState extends State<MathGameScreen> {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.orange.shade200),
                         ),
-                        child: SvgPicture.asset(
-                          AppAssets.getMathVisual(_operation),
-                          fit: BoxFit.contain,
+                        child: Transform(
+                          alignment: Alignment.center,
+                          transform: Matrix4.identity(), // Ensure no unwanted transformations
+                          child: SvgPicture.asset(
+                            AppAssets.getMathVisual(_operation),
+                            fit: BoxFit.contain,
+                            alignment: Alignment.center,
+                          ),
                         ),
                       ),
                     ],

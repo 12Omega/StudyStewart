@@ -673,14 +673,6 @@ class _ConverterScreenState extends State<ConverterScreen> {
           ),
         );
         break;
-      case 'surfer':
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CustomSubwaySurferScreen(gameContent: gameContent),
-          ),
-        );
-        break;
       default:
         // Default to Educational Wordle
         Navigator.push(
@@ -1155,7 +1147,6 @@ class _ConverterScreenState extends State<ConverterScreen> {
                               _buildGameTypeCard('Fill Diagram', Icons.quiz, 'diagram'),
                               _buildGameTypeCard('Audio Repetition', Icons.hearing, 'audio'),
                               _buildGameTypeCard('Repeat Game', Icons.replay, 'repeat'),
-                              _buildGameTypeCard('Subway Surfer', Icons.train, 'surfer'),
                             ],
                           ),
                         ],

@@ -64,6 +64,14 @@ class _StudyStuartAppState extends State<StudyStuartApp> {
     return MaterialApp(
       title: 'StudyStuart',
       
+      // Force left-to-right text direction globally
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: child!,
+        );
+      },
+      
       // Respect user's theme preference (light/dark/system)
       themeMode: _settingsService.themeMode,
       
