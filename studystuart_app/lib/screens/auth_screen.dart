@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/tts_service.dart';
+import '../services/notification_service.dart';
 import '../widgets/tts_button.dart';
+import '../models/user_character.dart';
 import 'home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
-  const AuthScreen({super.key});
+  final UserCharacter? userCharacter;
+  
+  const AuthScreen({super.key, this.userCharacter});
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -38,9 +43,13 @@ class _AuthScreenState extends State<AuthScreen> {
     _giveWarmWelcome();
   }
 
-  /// Give users a warm, welcoming greeting
+  /// Give users a warm, welcoming greeting with their character
   void _giveWarmWelcome() {
-    _voiceAssistant.speak('Welcome to Study Stuart! 🌟 I\'m so excited you\'re here! Let\'s get you signed in so we can start your amazing learning journey together!');
+    if (widget.userCharacter != null) {
+      _voiceAssistant.speak('${widget.userCharacter!.greeting} ${widget.userCharacter!.name}! 🌟 Your character looks amazing! Let\'s get you signed in so we can start your learning journey together!');
+    } else {
+      _voiceAssistant.speak('Welcome to Study Stuart! 🌟 I\'m so excited you\'re here! Let\'s get you signed in so we can start your amazing learning journey together!');
+    }
   }
 
   @override
@@ -102,7 +111,12 @@ class _AuthScreenState extends State<AuthScreen> {
         // Handle login
         await Future.delayed(const Duration(seconds: 2));
         if (mounted) {
-          _ttsService.speak('Login successful');
+          // Save login status
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('is_logged_in', true);
+          await prefs.setString('user_email', _emailController.text);
+          
+          _ttsService.speak('Login successful! Welcome back to your learning journey!');
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -112,7 +126,13 @@ class _AuthScreenState extends State<AuthScreen> {
         // Handle signup
         await Future.delayed(const Duration(seconds: 2));
         if (mounted) {
-          _ttsService.speak('Account created successfully');
+          // Save login status and user info
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('is_logged_in', true);
+          await prefs.setString('user_email', _emailController.text);
+          await prefs.setString('user_name', _nameController.text);
+          
+          _ttsService.speak('Account created successfully! Welcome to StudyStewart!');
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -149,6 +169,57 @@ class _AuthScreenState extends State<AuthScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
+                  
+                  // Character preview if available
+                  if (widget.userCharacter != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.blue.shade50, Colors.purple.shade50],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            widget.userCharacter!.emoji,
+                            style: const TextStyle(fontSize: 40),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Welcome, ${widget.userCharacter!.name}!',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          Text(
+                            widget.userCharacter!.ethnicity.displayName,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          if (widget.userCharacter!.customMessage != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              '"${widget.userCharacter!.customMessage}"',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.blue.shade700,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                   
                   // Logo
                   Container(
@@ -577,14 +648,8 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
           ),
           
-          // TTS Button in top right corner
-          const Positioned(
-            top: 16,
-            right: 16,
-            child: SafeArea(
-              child: TTSButton(),
-            ),
-          ),
+          // Positioned TTS Button in bottom right
+          const PositionedTTSButton(),
         ],
       ),
     );

@@ -5,6 +5,7 @@ import 'home_screen.dart';
 import 'settings_screen.dart';
 import 'dashboard_screen.dart';
 import 'converter_screen.dart';
+import 'learning_methods_screen.dart';
 
 class LearningScreen extends StatefulWidget {
   const LearningScreen({super.key});
@@ -49,7 +50,7 @@ class _LearningScreenState extends State<LearningScreen> {
         );
         break;
       case 3:
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const SettingsScreen()),
         );
@@ -283,6 +284,63 @@ class _LearningScreenState extends State<LearningScreen> {
                           icon: Icons.account_tree,
                           title: 'Mind Mapping',
                           description: 'Create mind maps and visual summaries of your notes.',
+                        ),
+                        
+                        const SizedBox(height: 20),
+                        
+                        // Learning Methods Button
+                        Container(
+                          width: double.infinity,
+                          height: 60,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              _ttsService.speak('Opening Learning Methods. Discover different ways to learn beyond repetition.');
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LearningMethodsScreen(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurple,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 4,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.explore,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                                SizedBox(width: 12),
+                                Text(
+                                  'Explore Learning Methods',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 12),
+                        
+                        Text(
+                          'Discover visual, auditory, kinesthetic & reading methods with home activities',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
                         
                         const SizedBox(height: 20),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 
 class AIContentAnalyzer {
   static final AIContentAnalyzer _instance = AIContentAnalyzer._internal();
@@ -27,8 +28,308 @@ class AIContentAnalyzer {
 
   bool get isInitialized => _model != null && _apiKey != null;
 
-  // Extract core concepts from any educational material
-  Future<CoreConcepts> extractCoreConcepts(String content) async {
+  // Extract core concepts from any educational material and enhance with internet resources
+  Future<EnhancedConcepts> extractAndEnhanceConcepts(String content) async {
+    if (!isInitialized) {
+      throw Exception('AI service not initialized. Please provide API key.');
+    }
+
+    try {
+      // Step 1: Extract core concepts from uploaded document
+      final coreConcepts = await extractCoreConcepts(content);
+      
+      // Step 2: Fetch additional educational resources from internet
+      final internetResources = await _fetchInternetResources(coreConcepts);
+      
+      // Step 3: Generate enhanced game content with internet data
+      final enhancedGameContent = await _generateEnhancedGameContent(coreConcepts, internetResources);
+      
+      return EnhancedConcepts(
+        originalConcepts: coreConcepts,
+        internetResources: internetResources,
+        enhancedGameContent: enhancedGameContent,
+      );
+      
+    } catch (e) {
+      debugPrint('Error extracting and enhancing concepts: $e');
+      // Fallback to original concepts if internet enhancement fails
+      final coreConcepts = await extractCoreConcepts(content);
+      return EnhancedConcepts(
+        originalConcepts: coreConcepts,
+        internetResources: InternetResources.empty(),
+        enhancedGameContent: [],
+      );
+    }
+  }
+
+  // Fetch educational resources from internet based on main concepts
+  Future<InternetResources> _fetchInternetResources(CoreConcepts concepts) async {
+    try {
+      final List<Future<dynamic>> futures = [
+        _fetchWikipediaContent(concepts.subject, concepts.mainTopics),
+        _fetchEducationalQuestions(concepts.subject, concepts.keyTerms),
+        _fetchPracticeProblems(concepts.subject, concepts.difficulty),
+        _fetchRelatedConcepts(concepts.subject, concepts.concepts),
+      ];
+
+      final results = await Future.wait(futures);
+      
+      return InternetResources(
+        wikipediaContent: results[0] as List<WikipediaArticle>,
+        educationalQuestions: results[1] as List<Question>,
+        practiceProblems: results[2] as List<Problem>,
+        relatedConcepts: results[3] as List<String>,
+      );
+      
+    } catch (e) {
+      debugPrint('Error fetching internet resources: $e');
+      return InternetResources.empty();
+    }
+  }
+
+  // Fetch Wikipedia content for additional context
+  Future<List<WikipediaArticle>> _fetchWikipediaContent(String subject, List<String> topics) async {
+    final articles = <WikipediaArticle>[];
+    
+    try {
+      for (final topic in topics.take(3)) { // Limit to 3 topics
+        final searchQuery = Uri.encodeComponent('$subject $topic');
+        final searchUrl = 'https://en.wikipedia.org/api/rest_v1/page/summary/$searchQuery';
+        
+        final response = await http.get(Uri.parse(searchUrl));
+        
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          articles.add(WikipediaArticle(
+            title: data['title'] ?? topic,
+            summary: data['extract'] ?? 'No summary available',
+            url: data['content_urls']?['desktop']?['page'] ?? '',
+          ));
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching Wikipedia content: $e');
+    }
+    
+    return articles;
+  }
+
+  // Generate educational questions using AI with internet context
+  Future<List<Question>> _fetchEducationalQuestions(String subject, List<String> keyTerms) async {
+    try {
+      final prompt = '''
+Generate 15 comprehensive educational questions for the subject: $subject
+Key terms to focus on: ${keyTerms.join(', ')}
+
+Create questions of varying difficulty levels (Easy, Medium, Hard) that test:
+1. Basic understanding and definitions
+2. Application of concepts
+3. Analysis and critical thinking
+4. Real-world applications
+5. Problem-solving skills
+
+Format as JSON array:
+[
+  {
+    "question": "Question text",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correctAnswer": 0,
+    "difficulty": "Easy/Medium/Hard",
+    "explanation": "Detailed explanation of the answer",
+    "category": "Understanding/Application/Analysis"
+  }
+]
+
+Provide only the JSON array.
+''';
+
+      final response = await _model!.generateContent([Content.text(prompt)]);
+      final responseText = response.text;
+
+      if (responseText != null && responseText.isNotEmpty) {
+        String cleanedResponse = responseText.trim();
+        if (cleanedResponse.startsWith('```json')) {
+          cleanedResponse = cleanedResponse.substring(7);
+        }
+        if (cleanedResponse.endsWith('```')) {
+          cleanedResponse = cleanedResponse.substring(0, cleanedResponse.length - 3);
+        }
+
+        final List<dynamic> questionsJson = json.decode(cleanedResponse);
+        return questionsJson.map((q) => Question.fromJson(q)).toList();
+      }
+    } catch (e) {
+      debugPrint('Error generating educational questions: $e');
+    }
+    
+    return [];
+  }
+
+  // Generate practice problems using AI
+  Future<List<Problem>> _fetchPracticeProblems(String subject, String difficulty) async {
+    try {
+      final prompt = '''
+Generate 12 practice problems for the subject: $subject
+Difficulty level: $difficulty
+
+Create diverse problem types:
+1. Multiple choice problems
+2. Fill-in-the-blank exercises
+3. Short answer questions
+4. Practical application scenarios
+5. Step-by-step problem solving
+
+Format as JSON array:
+[
+  {
+    "problem": "Problem statement or question",
+    "type": "multiple_choice/fill_blank/short_answer/scenario/step_by_step",
+    "options": ["Option 1", "Option 2", "Option 3", "Option 4"], // for multiple choice only
+    "correctAnswer": "Correct answer or solution",
+    "hints": ["Hint 1", "Hint 2", "Hint 3"],
+    "solution": "Detailed step-by-step solution",
+    "difficulty": "Easy/Medium/Hard",
+    "points": 10
+  }
+]
+
+Provide only the JSON array.
+''';
+
+      final response = await _model!.generateContent([Content.text(prompt)]);
+      final responseText = response.text;
+
+      if (responseText != null && responseText.isNotEmpty) {
+        String cleanedResponse = responseText.trim();
+        if (cleanedResponse.startsWith('```json')) {
+          cleanedResponse = cleanedResponse.substring(7);
+        }
+        if (cleanedResponse.endsWith('```')) {
+          cleanedResponse = cleanedResponse.substring(0, cleanedResponse.length - 3);
+        }
+
+        final List<dynamic> problemsJson = json.decode(cleanedResponse);
+        return problemsJson.map((p) => Problem.fromJson(p)).toList();
+      }
+    } catch (e) {
+      debugPrint('Error generating practice problems: $e');
+    }
+    
+    return [];
+  }
+
+  // Fetch related concepts using AI knowledge
+  Future<List<String>> _fetchRelatedConcepts(String subject, List<String> concepts) async {
+    try {
+      final prompt = '''
+Based on the subject "$subject" and these core concepts: ${concepts.join(', ')}
+
+Generate a list of 20 related concepts, topics, and skills that students should understand to have comprehensive knowledge in this area.
+
+Include:
+1. Prerequisite concepts
+2. Advanced topics
+3. Real-world applications
+4. Cross-disciplinary connections
+5. Current trends and developments
+
+Format as a simple JSON array of strings:
+["Concept 1", "Concept 2", "Concept 3", ...]
+
+Provide only the JSON array.
+''';
+
+      final response = await _model!.generateContent([Content.text(prompt)]);
+      final responseText = response.text;
+
+      if (responseText != null && responseText.isNotEmpty) {
+        String cleanedResponse = responseText.trim();
+        if (cleanedResponse.startsWith('```json')) {
+          cleanedResponse = cleanedResponse.substring(7);
+        }
+        if (cleanedResponse.endsWith('```')) {
+          cleanedResponse = cleanedResponse.substring(0, cleanedResponse.length - 3);
+        }
+
+        final List<dynamic> conceptsJson = json.decode(cleanedResponse);
+        return conceptsJson.cast<String>();
+      }
+    } catch (e) {
+      debugPrint('Error fetching related concepts: $e');
+    }
+    
+    return [];
+  }
+
+  // Generate enhanced game content combining document concepts with internet resources
+  Future<List<EnhancedGameContent>> _generateEnhancedGameContent(
+    CoreConcepts concepts, 
+    InternetResources resources
+  ) async {
+    try {
+      final gameTypes = ['wordle', 'math', 'quiz', 'memory', 'puzzle'];
+      final enhancedGames = <EnhancedGameContent>[];
+
+      for (final gameType in gameTypes) {
+        final prompt = '''
+Create an enhanced $gameType game that combines:
+
+Original Document Concepts:
+- Subject: ${concepts.subject}
+- Key Terms: ${concepts.keyTerms.join(', ')}
+- Main Topics: ${concepts.mainTopics.join(', ')}
+
+Additional Internet Resources:
+- Wikipedia Articles: ${resources.wikipediaContent.map((a) => a.title).join(', ')}
+- Related Concepts: ${resources.relatedConcepts.take(10).join(', ')}
+
+Generate comprehensive game content in JSON format:
+{
+  "gameType": "$gameType",
+  "title": "Game title",
+  "description": "Game description",
+  "levels": [
+    {
+      "level": 1,
+      "title": "Level title",
+      "content": {
+        // Game-specific content structure
+      },
+      "challenges": ["Challenge 1", "Challenge 2"],
+      "rewards": ["Reward 1", "Reward 2"]
+    }
+  ],
+  "totalQuestions": 20,
+  "difficulty": "Progressive",
+  "learningObjectives": ["Objective 1", "Objective 2"]
+}
+
+Provide only the JSON response.
+''';
+
+        final response = await _model!.generateContent([Content.text(prompt)]);
+        final responseText = response.text;
+
+        if (responseText != null && responseText.isNotEmpty) {
+          String cleanedResponse = responseText.trim();
+          if (cleanedResponse.startsWith('```json')) {
+            cleanedResponse = cleanedResponse.substring(7);
+          }
+          if (cleanedResponse.endsWith('```')) {
+            cleanedResponse = cleanedResponse.substring(0, cleanedResponse.length - 3);
+          }
+
+          final gameJson = json.decode(cleanedResponse);
+          enhancedGames.add(EnhancedGameContent.fromJson(gameJson));
+        }
+      }
+
+      return enhancedGames;
+    } catch (e) {
+      debugPrint('Error generating enhanced game content: $e');
+      return [];
+    }
+  }
     if (!isInitialized) {
       throw Exception('AI service not initialized. Please provide API key.');
     }
@@ -528,6 +829,258 @@ class MultiStyleGameContent {
       'auditoryContent': auditoryContent.toJson(),
       'kineticContent': kineticContent.toJson(),
       'readWriteContent': readWriteContent.toJson(),
+    };
+  }
+}
+
+// Enhanced data classes for internet-enhanced learning
+
+class EnhancedConcepts {
+  final CoreConcepts originalConcepts;
+  final InternetResources internetResources;
+  final List<EnhancedGameContent> enhancedGameContent;
+
+  EnhancedConcepts({
+    required this.originalConcepts,
+    required this.internetResources,
+    required this.enhancedGameContent,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'originalConcepts': originalConcepts.toJson(),
+      'internetResources': internetResources.toJson(),
+      'enhancedGameContent': enhancedGameContent.map((e) => e.toJson()).toList(),
+    };
+  }
+}
+
+class InternetResources {
+  final List<WikipediaArticle> wikipediaContent;
+  final List<Question> educationalQuestions;
+  final List<Problem> practiceProblems;
+  final List<String> relatedConcepts;
+
+  InternetResources({
+    required this.wikipediaContent,
+    required this.educationalQuestions,
+    required this.practiceProblems,
+    required this.relatedConcepts,
+  });
+
+  factory InternetResources.empty() {
+    return InternetResources(
+      wikipediaContent: [],
+      educationalQuestions: [],
+      practiceProblems: [],
+      relatedConcepts: [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'wikipediaContent': wikipediaContent.map((w) => w.toJson()).toList(),
+      'educationalQuestions': educationalQuestions.map((q) => q.toJson()).toList(),
+      'practiceProblems': practiceProblems.map((p) => p.toJson()).toList(),
+      'relatedConcepts': relatedConcepts,
+    };
+  }
+}
+
+class WikipediaArticle {
+  final String title;
+  final String summary;
+  final String url;
+
+  WikipediaArticle({
+    required this.title,
+    required this.summary,
+    required this.url,
+  });
+
+  factory WikipediaArticle.fromJson(Map<String, dynamic> json) {
+    return WikipediaArticle(
+      title: json['title'] ?? '',
+      summary: json['summary'] ?? '',
+      url: json['url'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'summary': summary,
+      'url': url,
+    };
+  }
+}
+
+class Question {
+  final String question;
+  final List<String> options;
+  final int correctAnswer;
+  final String difficulty;
+  final String explanation;
+  final String category;
+
+  Question({
+    required this.question,
+    required this.options,
+    required this.correctAnswer,
+    required this.difficulty,
+    required this.explanation,
+    required this.category,
+  });
+
+  factory Question.fromJson(Map<String, dynamic> json) {
+    return Question(
+      question: json['question'] ?? '',
+      options: List<String>.from(json['options'] ?? []),
+      correctAnswer: json['correctAnswer'] ?? 0,
+      difficulty: json['difficulty'] ?? 'Medium',
+      explanation: json['explanation'] ?? '',
+      category: json['category'] ?? 'Understanding',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'question': question,
+      'options': options,
+      'correctAnswer': correctAnswer,
+      'difficulty': difficulty,
+      'explanation': explanation,
+      'category': category,
+    };
+  }
+}
+
+class Problem {
+  final String problem;
+  final String type;
+  final List<String> options;
+  final String correctAnswer;
+  final List<String> hints;
+  final String solution;
+  final String difficulty;
+  final int points;
+
+  Problem({
+    required this.problem,
+    required this.type,
+    required this.options,
+    required this.correctAnswer,
+    required this.hints,
+    required this.solution,
+    required this.difficulty,
+    required this.points,
+  });
+
+  factory Problem.fromJson(Map<String, dynamic> json) {
+    return Problem(
+      problem: json['problem'] ?? '',
+      type: json['type'] ?? 'multiple_choice',
+      options: List<String>.from(json['options'] ?? []),
+      correctAnswer: json['correctAnswer'] ?? '',
+      hints: List<String>.from(json['hints'] ?? []),
+      solution: json['solution'] ?? '',
+      difficulty: json['difficulty'] ?? 'Medium',
+      points: json['points'] ?? 10,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'problem': problem,
+      'type': type,
+      'options': options,
+      'correctAnswer': correctAnswer,
+      'hints': hints,
+      'solution': solution,
+      'difficulty': difficulty,
+      'points': points,
+    };
+  }
+}
+
+class EnhancedGameContent {
+  final String gameType;
+  final String title;
+  final String description;
+  final List<GameLevel> levels;
+  final int totalQuestions;
+  final String difficulty;
+  final List<String> learningObjectives;
+
+  EnhancedGameContent({
+    required this.gameType,
+    required this.title,
+    required this.description,
+    required this.levels,
+    required this.totalQuestions,
+    required this.difficulty,
+    required this.learningObjectives,
+  });
+
+  factory EnhancedGameContent.fromJson(Map<String, dynamic> json) {
+    return EnhancedGameContent(
+      gameType: json['gameType'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      levels: (json['levels'] as List<dynamic>?)
+          ?.map((l) => GameLevel.fromJson(l))
+          .toList() ?? [],
+      totalQuestions: json['totalQuestions'] ?? 0,
+      difficulty: json['difficulty'] ?? 'Medium',
+      learningObjectives: List<String>.from(json['learningObjectives'] ?? []),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'gameType': gameType,
+      'title': title,
+      'description': description,
+      'levels': levels.map((l) => l.toJson()).toList(),
+      'totalQuestions': totalQuestions,
+      'difficulty': difficulty,
+      'learningObjectives': learningObjectives,
+    };
+  }
+}
+
+class GameLevel {
+  final int level;
+  final String title;
+  final Map<String, dynamic> content;
+  final List<String> challenges;
+  final List<String> rewards;
+
+  GameLevel({
+    required this.level,
+    required this.title,
+    required this.content,
+    required this.challenges,
+    required this.rewards,
+  });
+
+  factory GameLevel.fromJson(Map<String, dynamic> json) {
+    return GameLevel(
+      level: json['level'] ?? 1,
+      title: json['title'] ?? '',
+      content: Map<String, dynamic>.from(json['content'] ?? {}),
+      challenges: List<String>.from(json['challenges'] ?? []),
+      rewards: List<String>.from(json['rewards'] ?? []),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'level': level,
+      'title': title,
+      'content': content,
+      'challenges': challenges,
+      'rewards': rewards,
     };
   }
 }

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'screens/character_creation_screen.dart';
 import 'screens/auth_screen.dart';
+import 'screens/home_screen.dart';
 import 'services/tts_service.dart';
 import 'services/settings_service.dart';
 import 'widgets/figma_asset_examples.dart';
@@ -103,13 +106,151 @@ class _StudyStuartAppState extends State<StudyStuartApp> {
         ),
       ),
       
-      // Start the journey at our welcoming authentication screen
-      home: const AuthScreen(),
+      // Determine initial screen based on user status
+      home: const InitialScreenLoader(),
       
       // Special routes for testing and development
       routes: {
         '/asset-test': (context) => const FigmaAssetExamples(),
       },
+    );
+  }
+}
+
+/// 🚀 Initial Screen Loader - Smart Navigation for User Experience
+/// 
+/// This widget determines which screen to show based on the user's status:
+/// - New users: Character Creation → Auth → Home
+/// - Returning users without login: Auth → Home  
+/// - Returning logged-in users: Home directly
+class InitialScreenLoader extends StatefulWidget {
+  const InitialScreenLoader({super.key});
+
+  @override
+  State<InitialScreenLoader> createState() => _InitialScreenLoaderState();
+}
+
+class _InitialScreenLoaderState extends State<InitialScreenLoader> {
+  @override
+  void initState() {
+    super.initState();
+    _determineInitialScreen();
+  }
+
+  /// Smart navigation logic based on user preferences and login status
+  Future<void> _determineInitialScreen() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Check user status flags
+      final hasCreatedCharacter = prefs.getBool('character_created') ?? false;
+      final isLoggedIn = prefs.getBool('is_logged_in') ?? false;
+      final hasCompletedOnboarding = prefs.getBool('onboarding_completed') ?? false;
+      
+      // Add a small delay for smooth transition
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      if (!mounted) return;
+      
+      Widget targetScreen;
+      
+      if (!hasCreatedCharacter) {
+        // First-time user - start with character creation
+        targetScreen = const CharacterCreationScreen();
+      } else if (!isLoggedIn) {
+        // Returning user who needs to log in
+        targetScreen = const AuthScreen();
+      } else {
+        // Logged-in returning user - go straight to home
+        targetScreen = const HomeScreen();
+      }
+      
+      // Navigate to the determined screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => targetScreen),
+      );
+      
+    } catch (e) {
+      // If there's any error, default to character creation for safety
+      debugPrint('Error determining initial screen: $e');
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const CharacterCreationScreen()),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.blue.shade300,
+              Colors.purple.shade300,
+              Colors.pink.shade200,
+            ],
+          ),
+        ),
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // App logo
+              Icon(
+                Icons.school,
+                size: 80,
+                color: Colors.white,
+              ),
+              
+              SizedBox(height: 20),
+              
+              Text(
+                'StudyStewart',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              
+              SizedBox(height: 8),
+              
+              Text(
+                'Your Personal Learning Companion',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white70,
+                ),
+              ),
+              
+              SizedBox(height: 40),
+              
+              // Loading indicator
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+              
+              SizedBox(height: 16),
+              
+              Text(
+                'Loading your learning journey...',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white70,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

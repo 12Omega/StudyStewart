@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import '../services/tts_service.dart';
 import '../services/game_transition_service.dart';
+import '../services/emotional_feedback_service.dart';
+import '../services/notification_service.dart';
 import '../widgets/tts_button.dart';
+import '../widgets/study_mascot.dart';
+import '../widgets/premium_game_card.dart';
 import '../constants/assets.dart';
 import 'word_games_screen.dart';
 import 'settings_screen.dart';
@@ -15,6 +19,7 @@ import 'subway_surfer_screen.dart';
 import 'audio_repetition_screen.dart';
 import 'repeat_game_screen.dart';
 import 'educational_wordle_screen.dart';
+import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -124,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       case 3:
         // Visit the settings to customize the experience
         _voiceAssistant.speak("Let's make Study Stuart work perfectly for you!");
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const SettingsScreen()),
         );
@@ -148,6 +153,296 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         children: [
           SafeArea(
             child: Column(
+              children: [
+                // Enhanced header with mascot
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Welcome text with emotional design
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Welcome back!',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            Text(
+                              'Ready for your next challenge?',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // Animated mascot companion
+                      MascotReactions.welcome(size: MascotSize.medium),
+                      
+                      const SizedBox(width: 12),
+                      
+                      // Notification icon
+                      NotificationIcon(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const NotificationsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      
+                      const SizedBox(width: 12),
+                      
+                      // Profile with micro-interaction
+                      GestureDetector(
+                        onTap: () {
+                          EmotionalFeedbackService.provideMicroFeedback(context, 'button_press');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                          );
+                        },
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.blue.shade400, Colors.purple.shade400],
+                            ),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.3),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Progress indicator with momentum
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: EmotionalFeedbackService.createProgressAnimation(
+                    progress: 0.67, // 67% through current level
+                    label: 'Daily Goal Progress',
+                    color: Colors.green,
+                    showSparkles: true,
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Games section with floating animation
+                Expanded(
+                  child: AnimatedBuilder(
+                    animation: _floatingAnimation,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset: Offset(0, _floatingAnimation.value),
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              topRight: Radius.circular(30),
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              // Games header with emotional design
+                              Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'Choose Your Adventure',
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    
+                                    // Streak indicator
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [Colors.orange.shade400, Colors.red.shade400],
+                                        ),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text(
+                                            '🔥',
+                                            style: TextStyle(fontSize: 16),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          const Text(
+                                            '12 day streak',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              
+                              // Premium game cards with emotional feedback
+                              Expanded(
+                                child: ListView(
+                                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                                  children: [
+                                    GameCardFactory.mathChallenge(
+                                      onTap: () => _navigateToGame(const MathGameScreen()),
+                                      completedLevels: 7,
+                                    ),
+                                    
+                                    GameCardFactory.educationalWordle(
+                                      onTap: () => _navigateToGame(const EducationalWordleScreen()),
+                                      completedLevels: 12,
+                                    ),
+                                    
+                                    GameCardFactory.diagramExplorer(
+                                      onTap: () => _navigateToGame(const FillDiagramScreen()),
+                                      completedLevels: 5,
+                                    ),
+                                    
+                                    GameCardFactory.memoryChallenge(
+                                      onTap: () => _navigateToGame(const RepeatGameScreen()),
+                                      completedLevels: 3,
+                                      isLocked: false, // Unlock after completing 2 other games
+                                    ),
+                                    
+                                    GameCardFactory.audioRepetition(
+                                      onTap: () => _navigateToGame(const AudioRepetitionScreen()),
+                                      completedLevels: 8,
+                                    ),
+                                    
+                                    GameCardFactory.wordGames(
+                                      onTap: () => _navigateToGame(const WordGamesScreen()),
+                                      completedLevels: 15,
+                                    ),
+                                    
+                                    const SizedBox(height: 100), // Bottom padding for nav
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      
+      // Enhanced bottom navigation with micro-interactions
+      bottomNavigationBar: _buildEnhancedBottomNav(),
+    );
+  }
+
+  /// Navigate to game with emotional feedback and premium transitions
+  void _navigateToGame(Widget gameScreen) {
+    // Provide encouraging feedback
+    EmotionalFeedbackService.celebrateSuccess(
+      context,
+      type: 'correct',
+      intensity: 1,
+    );
+    
+    // Speak encouragement
+    _voiceAssistant.speak("Let's do this! Time to learn and have fun! 🚀");
+    
+    // Navigate with premium transition
+    Navigator.push(
+      context,
+      GameTransitionService.createZoomTransition(gameScreen),
+    );
+  }
+
+  Widget _buildEnhancedBottomNav() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 20,
+            spreadRadius: 5,
+          ),
+        ],
+      ),
+      child: BottomNavigationBar(
+        currentIndex: _currentlySelectedTab,
+        onTap: _onBottomNavTap,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey.shade400,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_rounded),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school_rounded),
+            label: 'Learning',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.auto_fix_high_rounded),
+            label: 'Converter',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings_rounded),
+            label: 'Settings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard_rounded),
+            label: 'Dashboard',
+          ),
+        ],
+      ),
+      
+      // Positioned TTS Button in bottom right
+      floatingActionButton: const PositionedTTSButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
               children: [
                 // Header with logo and profile
                 Padding(

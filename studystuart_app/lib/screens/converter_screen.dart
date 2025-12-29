@@ -3,14 +3,15 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import '../services/tts_service.dart';
 import '../services/content_processor_service.dart';
+import '../services/notification_service.dart';
 import '../services/ai_content_analyzer.dart';
-import '../services/api_key_service.dart';
 import '../widgets/tts_button.dart';
 import 'home_screen.dart';
 import 'learning_screen.dart';
 import 'dashboard_screen.dart';
 import 'settings_screen.dart';
 import 'custom_game_screens.dart';
+import 'enhanced_game_screen.dart';
 
 class ConverterScreen extends StatefulWidget {
   const ConverterScreen({super.key});
@@ -23,45 +24,26 @@ class _ConverterScreenState extends State<ConverterScreen> {
   final TTSService _ttsService = TTSService();
   final ContentProcessorService _contentProcessor = ContentProcessorService();
   final AIContentAnalyzer _aiAnalyzer = AIContentAnalyzer();
-  final ApiKeyService _apiKeyService = ApiKeyService();
   final TextEditingController _textController = TextEditingController();
-  final TextEditingController _apiKeyController = TextEditingController();
   
   int _selectedIndex = 2; // Converter tab is selected
   LearningStyle? _selectedLearningStyle;
   String _selectedGameType = '';
   File? _selectedFile;
   bool _isProcessing = false;
-  bool _useAI = true;
-  bool _showApiKeyInput = false;
   
-  GameContent? _generatedContent;
   CoreConcepts? _extractedConcepts;
+  EnhancedConcepts? _enhancedConcepts;
   MultiStyleGameContent? _multiStyleContent;
 
   @override
   void initState() {
     super.initState();
-    _initializeServices();
     _speakWelcome();
   }
 
-  Future<void> _initializeServices() async {
-    await _apiKeyService.initialize();
-    
-    // Initialize AI with provided API key
-    const String geminiApiKey = 'AIzaSyBwhBUWR8TlxEYJ3EJClycJStqZdY_P8YE';
-    _aiAnalyzer.initialize(geminiApiKey);
-    await _apiKeyService.setGeminiApiKey(geminiApiKey);
-    
-    setState(() {
-      _useAI = true;
-      _showApiKeyInput = false;
-    });
-  }
-
   void _speakWelcome() {
-    _ttsService.speak('AI-Powered Game Converter. Upload material or paste text to convert to personalized learning games for all learning styles.');
+    _ttsService.speak('Study Material Converter. Upload documents or paste text to convert into engaging learning games.');
   }
 
   void _selectLearningStyle(LearningStyle style) {
@@ -134,9 +116,8 @@ class _ConverterScreenState extends State<ConverterScreen> {
       _selectedLearningStyle = null;
       _selectedGameType = '';
       _generatedContent = null;
-      _extractedConcepts = null;
-      _multiStyleContent = null;
       _isProcessing = false;
+      _uploadedDocuments.clear();
     });
     
     _ttsService.speak('Study materials cleared. Ready for new content.');
@@ -208,7 +189,7 @@ class _ConverterScreenState extends State<ConverterScreen> {
         // Stay on Converter
         break;
       case 3:
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const SettingsScreen()),
         );
@@ -240,8 +221,15 @@ class _ConverterScreenState extends State<ConverterScreen> {
       );
 
       if (result != null && result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        final document = StudyDocument.fromFile(
+          result.files.single.path!,
+          result.files.single.name,
+        );
+        
         setState(() {
-          _selectedFile = File(result.files.single.path!);
+          _selectedFile = file;
+          _uploadedDocuments.add(document);
         });
         
         _ttsService.speak('File selected: ${result.files.single.name}');
@@ -257,11 +245,121 @@ class _ConverterScreenState extends State<ConverterScreen> {
     }
   }
 
-  Future<void> _convertContent() async {
+  Future<void> _convertWithAI() async {
     if (_textController.text.isEmpty && _selectedFile == null) {
       _ttsService.speak('Please enter text or upload a file');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter text or upload a file')),
+      );
+      return;
+    }
+
+    // Check if AI is initialized (you might want to add API key setup)
+    if (!_aiAnalyzer.isInitialized) {
+      _showApiKeyDialog();
+      return;
+    }
+
+    setState(() {
+      _isProcessing = true;
+    });
+
+    try {
+      String content = '';
+      
+      if (_selectedFile != null) {
+        _ttsService.speak('Processing uploaded file for AI analysis');
+        content = await _contentProcessor.extractTextFromFile(_selectedFile!);
+      } else {
+        content = _textController.text;
+      }
+
+      if (content.trim().isEmpty) {
+        throw Exception('No content found to process');
+      }
+
+      await _performAIAnalysis(content);
+      
+    } catch (e) {
+      setState(() {
+        _isProcessing = false;
+      });
+      
+      _ttsService.speak('Error during AI enhanced conversion');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
+  void _showApiKeyDialog() {
+    final apiKeyController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.key, color: Colors.purple),
+            SizedBox(width: 8),
+            Text('AI API Key Required'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('To use AI Enhanced Learning, please provide your Google Gemini API key:'),
+            SizedBox(height: 16),
+            TextField(
+              controller: apiKeyController,
+              decoration: InputDecoration(
+                labelText: 'Gemini API Key',
+                hintText: 'Enter your API key here',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+            ),
+            SizedBox(height: 12),
+            Text(
+              'Get your free API key from: https://makersuite.google.com/app/apikey',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final apiKey = apiKeyController.text.trim();
+              if (apiKey.isNotEmpty) {
+                _aiAnalyzer.initialize(apiKey);
+                Navigator.of(context).pop();
+                _convertWithAI(); // Retry conversion
+                _ttsService.speak('API key saved. Starting AI enhanced conversion.');
+              }
+            },
+            child: Text('Save & Continue'),
+          ),
+        ],
+      ),
+    );
+  }
+    if (_textController.text.isEmpty && _selectedFile == null) {
+      _ttsService.speak('Please enter text or upload a file');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter text or upload a file')),
+      );
+      return;
+    }
+
+    if (_selectedGameType.isEmpty) {
+      _ttsService.speak('Please select a game type');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a game type')),
       );
       return;
     }
@@ -284,11 +382,7 @@ class _ConverterScreenState extends State<ConverterScreen> {
         throw Exception('No content found to process');
       }
 
-      if (_useAI && _aiAnalyzer.isInitialized) {
-        await _performAIAnalysis(content);
-      } else {
-        await _performBasicConversion(content);
-      }
+      await _performContentConversion(content);
       
     } catch (e) {
       setState(() {
@@ -302,30 +396,59 @@ class _ConverterScreenState extends State<ConverterScreen> {
     }
   }
 
-  Future<void> _performAIAnalysis(String content) async {
-    _ttsService.speak('AI is analyzing your content to extract core concepts');
+  Future<void> _performContentConversion(String content) async {
+    _ttsService.speak('Converting content to $_selectedGameType game');
     
-    // Step 1: Extract core concepts using AI
-    final concepts = await _aiAnalyzer.extractCoreConcepts(content);
-    
-    setState(() {
-      _extractedConcepts = concepts;
-    });
-
-    _ttsService.speak('Analysis complete! Found ${concepts.keyTerms.length} key terms in ${concepts.subject}. Generating games for all learning styles.');
-
-    // Step 2: Generate content for all learning styles
-    final multiStyleContent = await _aiAnalyzer.generateMultiStyleContent(concepts);
+    final gameContent = _contentProcessor.convertToGameContent(content, _selectedGameType);
     
     setState(() {
-      _multiStyleContent = multiStyleContent;
+      _generatedContent = gameContent;
       _isProcessing = false;
     });
 
-    _ttsService.speak('AI has created personalized games for visual, auditory, kinesthetic, and reading learners. Choose your preferred learning style.');
+    _ttsService.speak('Content converted successfully! Ready to play ${gameContent.gameType}');
     
-    // Show AI analysis results
-    _showAIAnalysisResults(concepts, multiStyleContent);
+    // Show success dialog
+    _showConversionSuccessDialog(gameContent);
+  }
+
+  Future<void> _performAIAnalysis(String content) async {
+    _ttsService.speak('AI is analyzing your content and fetching comprehensive learning resources from the internet');
+    
+    try {
+      // Step 1: Extract core concepts and enhance with internet resources
+      final enhancedConcepts = await _aiAnalyzer.extractAndEnhanceConcepts(content);
+      
+      setState(() {
+        _extractedConcepts = enhancedConcepts.originalConcepts;
+        _enhancedConcepts = enhancedConcepts;
+      });
+
+      _ttsService.speak('Analysis complete! Found ${enhancedConcepts.originalConcepts.keyTerms.length} key terms and ${enhancedConcepts.internetResources.educationalQuestions.length} additional questions from internet resources. Enhanced games are ready for all learning styles.');
+
+      // Step 2: Generate content for all learning styles with enhanced data
+      final multiStyleContent = await _aiAnalyzer.generateMultiStyleContent(enhancedConcepts.originalConcepts);
+      
+      setState(() {
+        _multiStyleContent = multiStyleContent;
+        _isProcessing = false;
+      });
+
+      _ttsService.speak('AI has created comprehensive personalized games with internet-enhanced content for visual, auditory, kinesthetic, and reading learners. Choose your preferred learning style.');
+      
+      // Show enhanced AI analysis results
+      _showEnhancedAIAnalysisResults(enhancedConcepts, multiStyleContent);
+      
+    } catch (e) {
+      setState(() {
+        _isProcessing = false;
+      });
+      
+      _ttsService.speak('Error during AI analysis with internet enhancement');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 
   Future<void> _performBasicConversion(String content) async {
@@ -355,9 +478,201 @@ class _ConverterScreenState extends State<ConverterScreen> {
     _showConversionSuccessDialog(gameContent);
   }
 
-  void _showAIAnalysisResults(CoreConcepts concepts, MultiStyleGameContent multiStyleContent) {
+  void _showEnhancedAIAnalysisResults(EnhancedConcepts enhancedConcepts, MultiStyleGameContent multiStyleContent) {
     showDialog(
       context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.psychology, color: Colors.blue),
+              SizedBox(width: 8),
+              Text('Enhanced AI Analysis Results'),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Original Document Analysis
+                _buildAnalysisSection(
+                  'Document Analysis',
+                  Icons.description,
+                  [
+                    'Subject: ${enhancedConcepts.originalConcepts.subject}',
+                    'Grade Level: ${enhancedConcepts.originalConcepts.gradeLevel}',
+                    'Difficulty: ${enhancedConcepts.originalConcepts.difficulty}',
+                    'Key Terms: ${enhancedConcepts.originalConcepts.keyTerms.length} found',
+                    'Main Topics: ${enhancedConcepts.originalConcepts.mainTopics.join(', ')}',
+                  ],
+                ),
+                
+                SizedBox(height: 16),
+                
+                // Internet Resources
+                _buildAnalysisSection(
+                  'Internet Resources Added',
+                  Icons.public,
+                  [
+                    'Wikipedia Articles: ${enhancedConcepts.internetResources.wikipediaContent.length}',
+                    'Educational Questions: ${enhancedConcepts.internetResources.educationalQuestions.length}',
+                    'Practice Problems: ${enhancedConcepts.internetResources.practiceProblems.length}',
+                    'Related Concepts: ${enhancedConcepts.internetResources.relatedConcepts.length}',
+                  ],
+                ),
+                
+                SizedBox(height: 16),
+                
+                // Enhanced Games Available
+                _buildAnalysisSection(
+                  'Enhanced Games Created',
+                  Icons.games,
+                  [
+                    'Total Enhanced Games: ${enhancedConcepts.enhancedGameContent.length}',
+                    'Learning Styles: Visual, Auditory, Kinesthetic, Reading/Writing',
+                    'Total Questions: ${enhancedConcepts.internetResources.educationalQuestions.length + enhancedConcepts.internetResources.practiceProblems.length}',
+                    'Comprehensive Coverage: Document + Internet Resources',
+                  ],
+                ),
+                
+                SizedBox(height: 20),
+                
+                // Learning Style Selection
+                Text(
+                  'Choose Your Learning Style:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                SizedBox(height: 12),
+                
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildLearningStyleChip(LearningStyle.visual, 'Visual', Icons.visibility),
+                    _buildLearningStyleChip(LearningStyle.auditory, 'Auditory', Icons.hearing),
+                    _buildLearningStyleChip(LearningStyle.kinesthetic, 'Kinesthetic', Icons.touch_app),
+                    _buildLearningStyleChip(LearningStyle.readWrite, 'Reading/Writing', Icons.edit),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Close'),
+            ),
+            ElevatedButton(
+              onPressed: _selectedLearningStyle != null
+                  ? () {
+                      Navigator.of(context).pop();
+                      _launchEnhancedGame();
+                    }
+                  : null,
+              child: Text('Start Enhanced Game'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildAnalysisSection(String title, IconData icon, List<String> items) {
+    return Container(
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+        color: Colors.grey.shade50,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 20, color: Colors.blue),
+              SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          ...items.map((item) => Padding(
+            padding: EdgeInsets.only(left: 28, bottom: 4),
+            child: Text(
+              '• $item',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLearningStyleChip(LearningStyle style, String label, IconData icon) {
+    final isSelected = _selectedLearningStyle == style;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedLearningStyle = style;
+        });
+        _ttsService.speak('Selected $label learning style');
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.blue : Colors.grey.shade400,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected ? Colors.white : Colors.grey.shade600,
+            ),
+            SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.grey.shade700,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _launchEnhancedGame() {
+    if (_selectedLearningStyle == null || _enhancedConcepts == null) {
+      _ttsService.speak('Please select a learning style first');
+      return;
+    }
+
+    _ttsService.speak('Launching enhanced ${_selectedLearningStyle!.name} learning game with comprehensive internet resources');
+    
+    // Navigate to enhanced game screen with all the data
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EnhancedGameScreen(
+          enhancedConcepts: _enhancedConcepts!,
+          selectedLearningStyle: _selectedLearningStyle!,
+          multiStyleContent: _multiStyleContent!,
+        ),
+      ),
+    );
+  }
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -781,14 +1096,14 @@ class _ConverterScreenState extends State<ConverterScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'AI Game Converter',
+                              'Study Material Converter',
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.black,
                               ),
                             ),
-                            if (_selectedFile != null || _textController.text.isNotEmpty || _extractedConcepts != null)
+                            if (_selectedFile != null || _textController.text.isNotEmpty || _uploadedDocuments.isNotEmpty)
                               IconButton(
                                 onPressed: _showClearConfirmation,
                                 icon: Icon(
@@ -803,7 +1118,7 @@ class _ConverterScreenState extends State<ConverterScreen> {
                         const SizedBox(height: 16),
                         
                         // Materials Status
-                        if (_selectedFile != null || _textController.text.isNotEmpty || _extractedConcepts != null)
+                        if (_selectedFile != null || _textController.text.isNotEmpty || _uploadedDocuments.isNotEmpty)
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(12),
@@ -834,8 +1149,8 @@ class _ConverterScreenState extends State<ConverterScreen> {
                                   Text('📄 File: ${_selectedFile!.path.split('/').last}'),
                                 if (_textController.text.isNotEmpty)
                                   Text('📝 Text: ${_textController.text.length} characters'),
-                                if (_extractedConcepts != null)
-                                  Text('🤖 AI Analysis: ${_extractedConcepts!.subject} (${_extractedConcepts!.keyTerms.length} key terms)'),
+                                if (_uploadedDocuments.isNotEmpty)
+                                  Text('📚 Documents: ${_uploadedDocuments.length} uploaded'),
                               ],
                             ),
                           ),
@@ -932,94 +1247,6 @@ class _ConverterScreenState extends State<ConverterScreen> {
                         
                         const SizedBox(height: 20),
                         
-                        // AI Controls Section
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: _useAI ? Colors.blue.shade50 : Colors.grey.shade50,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: _useAI ? Colors.blue.shade200 : Colors.grey.shade300,
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.psychology,
-                                    color: _useAI ? Colors.blue : Colors.grey,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'AI-Powered Analysis',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: _useAI ? Colors.blue : Colors.grey,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  Switch(
-                                    value: _useAI,
-                                    onChanged: _apiKeyService.hasGeminiApiKey() 
-                                      ? (value) => _toggleAI()
-                                      : null,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                _useAI 
-                                  ? 'AI will analyze your content and create personalized games for all learning styles'
-                                  : 'Enable AI for intelligent content analysis and personalized game generation',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Icon(Icons.verified, color: Colors.green, size: 16),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'AI Ready - Google Gemini Integrated',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.green.shade600,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 20),
-                        
-                        // Or divider
-                        Row(
-                          children: [
-                            Expanded(child: Divider(color: Colors.grey.shade300)),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Text(
-                                'Or',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                            ),
-                            Expanded(child: Divider(color: Colors.grey.shade300)),
-                          ],
-                        ),
-                        
-                        const SizedBox(height: 20),
-                        
                         // Text Input
                         Stack(
                           children: [
@@ -1080,106 +1307,104 @@ class _ConverterScreenState extends State<ConverterScreen> {
                         
                         const SizedBox(height: 20),
                         
-                        // Conditional Game Selection
-                        if (_useAI && _aiAnalyzer.isInitialized) ...[
-                          // AI Mode - Show learning styles
-                          Text(
-                            'AI will create games for all learning styles',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.blue,
-                            ),
+                        // Game Type Selection
+                        Text(
+                          'Choose Game Type',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
                           ),
-                          const SizedBox(height: 16),
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.blue.shade200),
-                            ),
-                            child: Column(
-                              children: [
-                                Icon(Icons.psychology, size: 40, color: Colors.blue),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'AI Analysis Mode',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'AI will analyze your content and generate personalized games for Visual, Auditory, Kinesthetic, and Reading/Writing learners',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ] else ...[
-                          // Manual Mode - Show game types
-                          Text(
-                            'Choose Game Type',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          GridView.count(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 1.2,
-                            children: [
-                              _buildGameTypeCard('Educational Wordle', Icons.school, 'wordle'),
-                              _buildGameTypeCard('Math Challenge', Icons.calculate, 'math'),
-                              _buildGameTypeCard('Fill Diagram', Icons.quiz, 'diagram'),
-                              _buildGameTypeCard('Audio Repetition', Icons.hearing, 'audio'),
-                              _buildGameTypeCard('Repeat Game', Icons.replay, 'repeat'),
-                            ],
-                          ),
-                        ],
+                        ),
+                        const SizedBox(height: 16),
+                        GridView.count(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 1.2,
+                          children: [
+                            _buildGameTypeCard('Educational Wordle', Icons.school, 'wordle'),
+                            _buildGameTypeCard('Math Challenge', Icons.calculate, 'math'),
+                            _buildGameTypeCard('Fill Diagram', Icons.quiz, 'diagram'),
+                            _buildGameTypeCard('Audio Repetition', Icons.hearing, 'audio'),
+                            _buildGameTypeCard('Repeat Game', Icons.replay, 'repeat'),
+                          ],
+                        ),
                         
                         const SizedBox(height: 32),
                         
-                        // Convert Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: _isProcessing ? null : _convertContent,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _isProcessing ? Colors.grey : Colors.blue,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: _isProcessing
-                              ? Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        // Convert Buttons
+                        Column(
+                          children: [
+                            // Basic Convert Button
+                            SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                onPressed: _isProcessing ? null : _convertContent,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _isProcessing ? Colors.grey : Colors.blue,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: _isProcessing
+                                  ? Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          'Processing...',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Text(
+                                      'Convert to Game',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
+                              ),
+                            ),
+                            
+                            const SizedBox(height: 12),
+                            
+                            // AI Enhanced Convert Button
+                            SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                onPressed: _isProcessing ? null : _convertWithAI,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _isProcessing ? Colors.grey : Colors.purple,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.psychology, color: Colors.white),
+                                    const SizedBox(width: 8),
                                     Text(
-                                      'Processing...',
+                                      'AI Enhanced Learning',
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -1187,18 +1412,22 @@ class _ConverterScreenState extends State<ConverterScreen> {
                                       ),
                                     ),
                                   ],
-                                )
-                              : Text(
-                                  _useAI && _aiAnalyzer.isInitialized 
-                                    ? 'Analyze with AI' 
-                                    : 'Convert to Game',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
                                 ),
-                          ),
+                              ),
+                            ),
+                            
+                            const SizedBox(height: 8),
+                            
+                            Text(
+                              'AI Enhanced: Analyzes your document + fetches comprehensive learning resources from internet',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                                fontStyle: FontStyle.italic,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                         
                         const SizedBox(height: 20),
@@ -1210,14 +1439,8 @@ class _ConverterScreenState extends State<ConverterScreen> {
             ),
           ),
           
-          // TTS Button
-          const Positioned(
-            top: 16,
-            right: 16,
-            child: SafeArea(
-              child: TTSButton(),
-            ),
-          ),
+          // Positioned TTS Button in bottom right
+          const PositionedTTSButton(),
         ],
       ),
       
@@ -1327,3 +1550,127 @@ class _ConverterScreenState extends State<ConverterScreen> {
     super.dispose();
   }
 }
+  Future<void> _convertContent() async {
+    if (_textController.text.isEmpty && _selectedFile == null) {
+      _ttsService.speak('Please enter text or upload a file');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter text or upload a file')),
+      );
+      return;
+    }
+
+    if (_selectedGameType.isEmpty) {
+      _ttsService.speak('Please select a game type');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a game type')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isProcessing = true;
+    });
+
+    try {
+      String content = '';
+      
+      if (_selectedFile != null) {
+        _ttsService.speak('Processing uploaded file');
+        content = await _contentProcessor.extractTextFromFile(_selectedFile!);
+      } else {
+        content = _textController.text;
+      }
+
+      if (content.trim().isEmpty) {
+        throw Exception('No content found to process');
+      }
+
+      await _performBasicConversion(content);
+      
+    } catch (e) {
+      setState(() {
+        _isProcessing = false;
+      });
+      
+      _ttsService.speak('Error converting content');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
+  Future<void> _performBasicConversion(String content) async {
+    _ttsService.speak('Converting content to $_selectedGameType game');
+    
+    final gameContent = _contentProcessor.convertToGameContent(content, _selectedGameType);
+    
+    setState(() {
+      _isProcessing = false;
+    });
+
+    _ttsService.speak('Content converted successfully! Ready to play ${gameContent.gameType}');
+    
+    // Show success dialog and navigate to game
+    _showConversionSuccessDialog(gameContent);
+  }
+
+  void _showConversionSuccessDialog(GameContent gameContent) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green),
+              SizedBox(width: 8),
+              Text('Conversion Complete!'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Your content has been converted to:'),
+              SizedBox(height: 8),
+              Text(
+                gameContent.gameType,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              SizedBox(height: 8),
+              Text(gameContent.description),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Close'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _launchGame(gameContent);
+              },
+              child: Text('Play Game'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _launchGame(GameContent gameContent) {
+    _ttsService.speak('Launching ${gameContent.gameType}');
+    
+    // Navigate to appropriate game screen based on game type
+    switch (gameContent.gameType.toLowerCase()) {
+      case 'educational wordle':
+        Navigator.pushNamed(context, '/wordle', arguments: gameContent);
+        break;
+      case 'math challenge':
+        Navigator.pushNamed(context, '/math', arguments: gameContent);
+        break;
+      default:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Game type ${gameContent.gameType} not yet implemented')),
+        );
+    }
+  }

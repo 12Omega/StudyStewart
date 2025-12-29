@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import '../services/tts_service.dart';
 import '../widgets/tts_button.dart';
+import '../widgets/document_concept_selector.dart';
 
 class EducationalWordleScreen extends StatefulWidget {
   const EducationalWordleScreen({super.key});
@@ -25,6 +26,12 @@ class _EducationalWordleScreenState extends State<EducationalWordleScreen> {
   bool _won = false;
   int _score = 0;
   int _streak = 0;
+  
+  // Document/Concept selection
+  StudyDocument? _selectedDocument;
+  String? _selectedConcept;
+  List<StudyDocument> _availableDocuments = [];
+  List<String> _availableConcepts = [];
 
   final Map<String, List<Map<String, String>>> _wordCategories = {
     'Science': [
@@ -80,8 +87,15 @@ class _EducationalWordleScreenState extends State<EducationalWordleScreen> {
   @override
   void initState() {
     super.initState();
+    _initializeSampleData();
     _selectRandomWord();
     _speakWelcome();
+  }
+
+  void _initializeSampleData() {
+    // Initialize sample documents and concepts for educational content
+    _availableDocuments = SampleDocuments.getNepalSamples();
+    _availableConcepts = SampleDocuments.getNepalConcepts();
   }
 
   void _selectRandomWord() {
