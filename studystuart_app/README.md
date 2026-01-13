@@ -1,16 +1,44 @@
-# studystuart_app
+# StudyStewart Flutter App
 
-A new Flutter project.
+This is the main Flutter application for StudyStewart.
 
-## Getting Started
+## Quick Start
 
-This project is a starting point for a Flutter application.
+```bash
+# Install dependencies
+flutter pub get
 
-A few resources to get you started if this is your first Flutter project:
+# Run the app
+flutter run
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+# Build for production
+flutter build apk --release  # Android
+flutter build web            # Web
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Documentation
+
+For complete documentation, see the main project [STUDYSTEWART_DOCUMENTATION.md](../STUDYSTEWART_DOCUMENTATION.md).
+
+## Key Files
+
+- `lib/main.dart` - App entry point
+- `lib/screens/` - All screen implementations
+- `lib/services/` - Business logic (TTS, settings, notifications)
+- `lib/widgets/` - Reusable UI components
+- `assets/` - Images, icons, and design references
+
+## Features
+
+- ✅ Pixel-perfect Figma design implementation
+- ✅ Full accessibility with TTS integration
+- ✅ Character customization with Nepal's ethnic diversity
+- ✅ Educational games and learning style assessment
+- ✅ Progress tracking and gamification
+- ✅ Smart notifications and engagement features
+
+## Requirements
+
+- Flutter SDK 3.8.1+
+- Dart SDK (included with Flutter)
+- Android Studio, VS Code, or Xcode for development
