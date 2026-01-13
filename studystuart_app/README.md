@@ -1,44 +1,42 @@
-# StudyStewart Flutter App
+StudyStewart Flutter App
 
 This is the main Flutter application for StudyStewart.
 
-## Quick Start
+Quick Start
 
-```bash
-# Install dependencies
+Install dependencies
 flutter pub get
 
-# Run the app
+Run the app
 flutter run
 
-# Build for production
-flutter build apk --release  # Android
-flutter build web            # Web
-```
+Build for production
+flutter build apk --release  Android
+flutter build web            Web
 
-## Documentation
+Documentation
 
-For complete documentation, see the main project [STUDYSTEWART_DOCUMENTATION.md](../STUDYSTEWART_DOCUMENTATION.md).
+For complete documentation, see the main project STUDYSTEWART_DOCUMENTATION.md.
 
-## Key Files
+Key Files
 
-- `lib/main.dart` - App entry point
-- `lib/screens/` - All screen implementations
-- `lib/services/` - Business logic (TTS, settings, notifications)
-- `lib/widgets/` - Reusable UI components
-- `assets/` - Images, icons, and design references
+lib/main.dart - App entry point
+lib/screens/ - All screen implementations
+lib/services/ - Business logic (TTS, settings, notifications)
+lib/widgets/ - Reusable UI components
+assets/ - Images, icons, and design references
 
-## Features
+Features
 
-- ✅ Pixel-perfect Figma design implementation
-- ✅ Full accessibility with TTS integration
-- ✅ Character customization with Nepal's ethnic diversity
-- ✅ Educational games and learning style assessment
-- ✅ Progress tracking and gamification
-- ✅ Smart notifications and engagement features
+✅ Pixel-perfect Figma design implementation
+✅ Full accessibility with TTS integration
+✅ Character customization with Nepal's ethnic diversity
+✅ Educational games and learning style assessment
+✅ Progress tracking and gamification
+✅ Smart notifications and engagement features
 
-## Requirements
+Requirements
 
-- Flutter SDK 3.8.1+
-- Dart SDK (included with Flutter)
-- Android Studio, VS Code, or Xcode for development
+Flutter SDK 3.8.1+
+Dart SDK (included with Flutter)
+Android Studio, VS Code, or Xcode for development
